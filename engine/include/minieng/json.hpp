@@ -54,4 +54,4 @@ private:
     friend class JsonParser;
 };
 
-}  // namespace minieng
+} // namespace minieng

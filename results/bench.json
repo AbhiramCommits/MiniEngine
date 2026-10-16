@@ -6,28 +6,28 @@
   "warmup_ticks": 60,
   "body_counts": [500, 2000, 5000],
   "scenario_a": [
-    { "bodies": 500, "broadphase": "bruteforce", "mean_ms": 0.483765, "p50_ms": 0.431708, "p95_ms": 0.667296, "max_ms": 8.526500, "mean_pairs": 64.770690, "mean_contacts": 64.770690 },
-    { "bodies": 500, "broadphase": "sap", "mean_ms": 0.124720, "p50_ms": 0.095980, "p95_ms": 0.173351, "max_ms": 15.067833, "mean_pairs": 64.770690, "mean_contacts": 64.770690 },
-    { "bodies": 2000, "broadphase": "bruteforce", "mean_ms": 12.894280, "p50_ms": 9.256354, "p95_ms": 30.792885, "max_ms": 111.638708, "mean_pairs": 307.505172, "mean_contacts": 307.505172 },
-    { "bodies": 2000, "broadphase": "sap", "mean_ms": 1.121055, "p50_ms": 0.860583, "p95_ms": 1.825771, "max_ms": 34.551458, "mean_pairs": 307.505172, "mean_contacts": 307.505172 },
-    { "bodies": 5000, "broadphase": "bruteforce", "mean_ms": 56.056206, "p50_ms": 50.749792, "p95_ms": 110.308654, "max_ms": 299.328500, "mean_pairs": 1008.245402, "mean_contacts": 1008.245402 },
-    { "bodies": 5000, "broadphase": "sap", "mean_ms": 2.950898, "p50_ms": 2.838562, "p95_ms": 3.967473, "max_ms": 21.823375, "mean_pairs": 1008.245402, "mean_contacts": 1008.245402 }
+    { "bodies": 500, "broadphase": "bruteforce", "mean_ms": 0.641610, "p50_ms": 0.561666, "p95_ms": 1.190468, "max_ms": 14.377458, "mean_pairs": 64.770690, "mean_contacts": 64.770690 },
+    { "bodies": 500, "broadphase": "sap", "mean_ms": 0.164813, "p50_ms": 0.130333, "p95_ms": 0.190002, "max_ms": 11.998625, "mean_pairs": 64.770690, "mean_contacts": 64.770690 },
+    { "bodies": 2000, "broadphase": "bruteforce", "mean_ms": 7.539977, "p50_ms": 6.194563, "p95_ms": 14.007074, "max_ms": 66.748959, "mean_pairs": 307.505172, "mean_contacts": 307.505172 },
+    { "bodies": 2000, "broadphase": "sap", "mean_ms": 0.643455, "p50_ms": 0.568250, "p95_ms": 0.963961, "max_ms": 22.884125, "mean_pairs": 307.505172, "mean_contacts": 307.505172 },
+    { "bodies": 5000, "broadphase": "bruteforce", "mean_ms": 45.455104, "p50_ms": 40.752604, "p95_ms": 76.794156, "max_ms": 213.877750, "mean_pairs": 1008.245402, "mean_contacts": 1008.245402 },
+    { "bodies": 5000, "broadphase": "sap", "mean_ms": 2.344327, "p50_ms": 2.231167, "p95_ms": 2.884840, "max_ms": 6.555042, "mean_pairs": 1008.245402, "mean_contacts": 1008.245402 }
   ],
   "systems_5000_sap": [
-    { "system": "integrate", "mean_ms": 0.093053, "p95_ms": 0.144936, "share_percent": 3.153395 },
-    { "system": "broadphase", "mean_ms": 2.450867, "p95_ms": 3.138648, "share_percent": 83.054961 },
-    { "system": "narrowphase", "mean_ms": 0.159299, "p95_ms": 0.347175, "share_percent": 5.398326 },
-    { "system": "resolve", "mean_ms": 0.099279, "p95_ms": 0.165854, "share_percent": 3.364367 },
-    { "system": "transforms", "mean_ms": 0.154252, "p95_ms": 0.259404, "share_percent": 5.227286 }
+    { "system": "integrate", "mean_ms": 0.076338, "p95_ms": 0.096129, "share_percent": 3.256282 },
+    { "system": "broadphase", "mean_ms": 1.987152, "p95_ms": 2.422299, "share_percent": 84.764271 },
+    { "system": "narrowphase", "mean_ms": 0.095852, "p95_ms": 0.136133, "share_percent": 4.088657 },
+    { "system": "resolve", "mean_ms": 0.063872, "p95_ms": 0.094587, "share_percent": 2.724524 },
+    { "system": "transforms", "mean_ms": 0.111422, "p95_ms": 0.136252, "share_percent": 4.752832 }
   ],
-  "tick_total_ms_5000_sap": 2.950898,
+  "tick_total_ms_5000_sap": 2.344327,
   "scenario_b": {
     "bodies": 5000,
     "raycasts": 100000,
-    "raycasts_per_sec": 51626.462666,
+    "raycasts_per_sec": 47042.320884,
     "raycast_hit_rate": 1.000000,
     "sweeps": 100000,
-    "sweeps_per_sec": 58834.683499,
+    "sweeps_per_sec": 60356.008407,
     "sweep_hit_rate": 0.918030
   },
   "scenario_c": {

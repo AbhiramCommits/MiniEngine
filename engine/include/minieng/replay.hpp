@@ -33,4 +33,4 @@ struct Replay {
     bool same_as(const Replay& other, bool compare_hashes = true) const;
 };
 
-}  // namespace minieng
+} // namespace minieng

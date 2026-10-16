@@ -17,20 +17,20 @@ Transform make_trs(const Vec3& pos, const Quat& rot, const Vec3& scale) {
     return t;
 }
 
-}  // namespace
+} // namespace
 
 TEST(Scene, ThreeLevelChainMatchesManualProduct) {
     Scene scene;
 
-    const Transform root_t = make_trs(Vec3(1.0f, 0.0f, -2.0f),
-                                      Quat::from_axis_angle(Vec3::unit_z(), deg_to_rad(35.0f)),
-                                      Vec3(1.0f, 1.0f, 1.0f));
-    const Transform mid_t = make_trs(Vec3(0.0f, 2.0f, 0.0f),
-                                     Quat::from_axis_angle(Vec3::unit_y(), deg_to_rad(90.0f)),
-                                     Vec3(2.0f, 1.0f, 1.0f));
-    const Transform leaf_t = make_trs(Vec3(0.0f, 0.0f, 3.0f),
-                                      Quat::from_axis_angle(Vec3::unit_x(), deg_to_rad(-20.0f)),
-                                      Vec3(1.0f, 1.0f, 0.5f));
+    const Transform root_t =
+        make_trs(Vec3(1.0f, 0.0f, -2.0f), Quat::from_axis_angle(Vec3::unit_z(), deg_to_rad(35.0f)),
+                 Vec3(1.0f, 1.0f, 1.0f));
+    const Transform mid_t =
+        make_trs(Vec3(0.0f, 2.0f, 0.0f), Quat::from_axis_angle(Vec3::unit_y(), deg_to_rad(90.0f)),
+                 Vec3(2.0f, 1.0f, 1.0f));
+    const Transform leaf_t =
+        make_trs(Vec3(0.0f, 0.0f, 3.0f), Quat::from_axis_angle(Vec3::unit_x(), deg_to_rad(-20.0f)),
+                 Vec3(1.0f, 1.0f, 0.5f));
 
     const int root = scene.create_node(-1);
     const int mid = scene.create_node(root);
@@ -42,8 +42,7 @@ TEST(Scene, ThreeLevelChainMatchesManualProduct) {
     scene.update_world_transforms();
 
     // Manual composition: world = root * mid * leaf.
-    const Mat4 expected =
-        root_t.to_matrix() * mid_t.to_matrix() * leaf_t.to_matrix();
+    const Mat4 expected = root_t.to_matrix() * mid_t.to_matrix() * leaf_t.to_matrix();
 
     for (int r = 0; r < 4; ++r) {
         for (int c = 0; c < 4; ++c) {

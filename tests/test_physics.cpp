@@ -81,7 +81,7 @@ struct TestWorld {
     }
 };
 
-}  // namespace
+} // namespace
 
 // ---------------------------------------------------------------------------
 // Narrowphase primitives
@@ -98,7 +98,7 @@ TEST(Narrowphase, AabbAabbPenetrationAndNormal) {
     Vec3 n;
     float pen = 0.0f;
     ASSERT_TRUE(aabb_aabb(a, b, n, pen));
-    EXPECT_NEAR(pen, 0.5f, 1e-5f);        // overlap only on X
+    EXPECT_NEAR(pen, 0.5f, 1e-5f); // overlap only on X
     EXPECT_TRUE(n.approx_equal_to(Vec3::unit_x(), 1e-5f));
 
     // Fully separated boxes report no overlap.
@@ -167,7 +167,7 @@ TEST(Narrowphase, SphereObbPenetration) {
     float pen = 0.0f;
     ASSERT_TRUE(sphere_obb(Vec3(1.5f, 0, 0), 1.0f, box, n, pen));
     EXPECT_NEAR(pen, 0.5f, 1e-5f);
-    EXPECT_TRUE(n.approx_equal_to(Vec3::unit_x(), 1e-5f));  // box -> sphere
+    EXPECT_TRUE(n.approx_equal_to(Vec3::unit_x(), 1e-5f)); // box -> sphere
 
     EXPECT_FALSE(sphere_obb(Vec3(5, 0, 0), 1.0f, box, n, pen));
 }

@@ -3,25 +3,25 @@ MiniEngine benchmark
 
 === (a) broadphase: brute force vs sweep-and-prune ===
   bodies  broadphase     mean_ms     p95_ms     max_ms        pairs     contacts
-     500  bruteforce       0.484      0.667      8.526         64.8         64.8
-     500  sap              0.125      0.173     15.068         64.8         64.8
-    2000  bruteforce      12.894     30.793    111.639        307.5        307.5
-    2000  sap              1.121      1.826     34.551        307.5        307.5
-    5000  bruteforce      56.056    110.309    299.329       1008.2       1008.2
-    5000  sap              2.951      3.967     21.823       1008.2       1008.2
+     500  bruteforce       0.642      1.190     14.377         64.8         64.8
+     500  sap              0.165      0.190     11.999         64.8         64.8
+    2000  bruteforce       7.540     14.007     66.749        307.5        307.5
+    2000  sap              0.643      0.964     22.884        307.5        307.5
+    5000  bruteforce      45.455     76.794    213.878       1008.2       1008.2
+    5000  sap              2.344      2.885      6.555       1008.2       1008.2
 
 === (a) per-system breakdown, 5000 bodies, sap ===
 system            mean_ms      share
-integrate           0.093       3.2%
-broadphase          2.451      83.1%
-narrowphase         0.159       5.4%
-resolve             0.099       3.4%
-transforms          0.154       5.2%
-tick_total          2.951     100.0%
+integrate           0.076       3.3%
+broadphase          1.987      84.8%
+narrowphase         0.096       4.1%
+resolve             0.064       2.7%
+transforms          0.111       4.8%
+tick_total          2.344     100.0%
 
 === (b) queries against the 5000-body scene ===
-raycasts    100000    1936.991 ms           51626 /s  hit_rate=1.00
-sweeps      100000    1699.678 ms           58835 /s  hit_rate=0.92
+raycasts    100000    2125.745 ms           47042 /s  hit_rate=1.00
+sweeps      100000    1656.836 ms           60356 /s  hit_rate=0.92
 
 === (c) determinism ===
 same seed, two runs : identical  (0x6bd6f1ddbf955f2f)

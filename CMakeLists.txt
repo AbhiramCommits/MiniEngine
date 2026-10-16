@@ -17,6 +17,7 @@ option(MINIENGINE_BUILD_APP    "Build the GLFW/Dear ImGui sandbox app" ON)
 option(MINIENGINE_BUILD_TESTS  "Build the GoogleTest suite"          ON)
 option(MINIENGINE_BUILD_TOOLS  "Build the headless benchmark tool"   ON)
 option(MINIENGINE_WERROR       "Treat first-party warnings as errors" OFF)
+option(MINIENGINE_SANITIZE     "Build with AddressSanitizer + UndefinedBehaviorSanitizer" OFF)
 
 # Single place that owns the project's warning policy. Applied to every
 # first-party target; third-party code (gtest, glfw, imgui) is left alone.
@@ -25,6 +26,15 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang|GNU")
     target_compile_options(minieng_warnings INTERFACE -Wall -Wextra)
     if(MINIENGINE_WERROR)
         target_compile_options(minieng_warnings INTERFACE -Werror)
+    endif()
+    if(MINIENGINE_SANITIZE)
+        target_compile_options(minieng_warnings INTERFACE
+            -fsanitize=address,undefined
+            -fno-omit-frame-pointer
+            -fno-sanitize-recover=undefined)
+        target_link_options(minieng_warnings INTERFACE
+            -fsanitize=address,undefined
+            -fno-omit-frame-pointer)
     endif()
 elseif(MSVC)
     target_compile_options(minieng_warnings INTERFACE /W4)

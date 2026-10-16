@@ -54,7 +54,9 @@ void BindingTable::bind_action(const std::string& name, Action action) {
     names_.push_back(name);
 }
 
-bool BindingTable::has(const std::string& name) const { return index_.count(name) > 0; }
+bool BindingTable::has(const std::string& name) const {
+    return index_.count(name) > 0;
+}
 
 const BindingTable::Entry* BindingTable::find_entry(const std::string& name) const {
     const auto it = index_.find(name);
@@ -186,7 +188,7 @@ RigidBody* selected_body(World& world, EntityId selected) {
     return world.get_rigid_body(selected);
 }
 
-}  // namespace
+} // namespace
 
 void register_simulation_bindings(BindingTable& table, World& world, Scene& scene,
                                   PhysicsConfig& config, EntityId& selected, SimControl& control) {
@@ -337,15 +339,15 @@ void register_simulation_bindings(BindingTable& table, World& world, Scene& scen
     table.bind_readonly_float("stats.fps", [&control]() { return control.fps; }, 0.0f, 1000.0f);
     table.bind_readonly_float(
         "stats.ticks", [&control]() { return static_cast<float>(control.ticks); }, 0.0f, 1.0e9f);
-    table.bind_readonly_float("stats.bodies",
-                              [&control]() { return static_cast<float>(control.body_count); },
-                              0.0f, 1.0e9f);
-    table.bind_readonly_float("stats.pairs",
-                              [&control]() { return static_cast<float>(control.pair_count); },
-                              0.0f, 1.0e9f);
+    table.bind_readonly_float(
+        "stats.bodies", [&control]() { return static_cast<float>(control.body_count); }, 0.0f,
+        1.0e9f);
+    table.bind_readonly_float(
+        "stats.pairs", [&control]() { return static_cast<float>(control.pair_count); }, 0.0f,
+        1.0e9f);
     table.bind_readonly_float(
         "stats.queries_per_sec", [&control]() { return control.queries_per_sec; }, 0.0f, 1.0e12f);
 }
 
-}  // namespace ui
-}  // namespace minieng
+} // namespace ui
+} // namespace minieng

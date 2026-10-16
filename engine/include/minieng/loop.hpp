@@ -16,12 +16,12 @@ namespace minieng {
 // Explicit, ordered simulation stages. Never reorder without updating every
 // consumer that relies on the sequence.
 enum class SystemStage : int {
-    Input = 0,          // sample devices / replay input
-    Spawn,              // scripts, spawners, gameplay logic
-    PhysicsIntegrate,   // semi-implicit Euler, damping, angular integration
-    CollisionResolve,   // broadphase -> narrowphase -> impulses
-    SceneTransform,     // recompute world matrices from local transforms
-    UiObserve,          // immediate-mode UI, observers, profiler readout
+    Input = 0,        // sample devices / replay input
+    Spawn,            // scripts, spawners, gameplay logic
+    PhysicsIntegrate, // semi-implicit Euler, damping, angular integration
+    CollisionResolve, // broadphase -> narrowphase -> impulses
+    SceneTransform,   // recompute world matrices from local transforms
+    UiObserve,        // immediate-mode UI, observers, profiler readout
     Count
 };
 
@@ -71,4 +71,4 @@ private:
     std::array<System, kSystemStageCount> systems_{};
 };
 
-}  // namespace minieng
+} // namespace minieng

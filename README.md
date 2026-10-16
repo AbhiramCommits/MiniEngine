@@ -20,6 +20,7 @@ widgets.
 | Fixed-timestep loop with explicit system-stage ordering | `engine/include/minieng/loop.hpp`, `engine/src/loop.cpp` |
 | Rigid-body physics: integration, SAP + brute-force broadphase, AABB/sphere/OBB narrowphase, impulse + friction resolution | `engine/include/minieng/physics.hpp`, `engine/src/physics.cpp` |
 | Raycast / AABB sweep / overlap-sphere query API | same files (`PhysicsWorld`) |
+| JSON scene files → World/Scene (shapes, mass, materials, repetition, gravity, camera) | `engine/include/minieng/scene_loader.hpp`, `engine/src/scene_loader.cpp` |
 | Data-driven UI layout (hand-written JSON parser, anchors, row/column stacking) | `engine/include/minieng/json.hpp`, `engine/src/json.cpp`, `engine/include/minieng/ui/layout.hpp`, `engine/src/ui/layout.cpp` |
 | Binding table wiring UI names to live simulation state | `engine/include/minieng/ui/bindings.hpp`, `engine/src/ui/bindings.cpp` |
 | Headless focus model (spatial + Tab traversal, activation, wrapping) | `engine/include/minieng/ui/navigation.hpp`, `engine/src/ui/navigation.cpp` |
@@ -27,10 +28,10 @@ widgets.
 | Frame/system profiler and `MINIENG_PROFILE` | `engine/include/minieng/profiler.hpp`, `engine/src/profiler.cpp` |
 | GLFW + Dear ImGui sandbox app (scene lines, inspector, sliders, replay controls) | `app/src/main.cpp` |
 | Headless benchmark harness | `tools/bench.cpp` |
-| Tests | `tests/test_math.cpp`, `tests/test_scene.cpp`, `tests/test_loop.cpp`, `tests/test_physics.cpp`, `tests/test_ui.cpp`, `tests/test_determinism.cpp`, `tests/test_query_fuzz.cpp` |
-| UI layout data | `data/ui/main.ui.json`, `data/ui/alt.ui.json`, `docs/ui-layout.md` |
-| Replay data | `data/replays/demo.replay` |
+| Tests | `tests/test_math.cpp`, `tests/test_scene.cpp`, `tests/test_loop.cpp`, `tests/test_physics.cpp`, `tests/test_ui.cpp`, `tests/test_scenes.cpp`, `tests/test_determinism.cpp`, `tests/test_query_fuzz.cpp` |
+| Authored data | `data/ui/main.ui.json`, `data/ui/alt.ui.json`, `data/scenes/*.json`, `data/replays/demo.replay` |
 | Bench output | `results/bench.json`, `results/bench.txt` |
+| Docs | `docs/ui-layout.md`, `.clang-format`, `.github/workflows/ci.yml` |
 
 ## Architecture
 
@@ -174,6 +175,32 @@ Editing `data/ui/main.ui.json` changes the widget tree, the computed layout, and
 with **no recompilation**. `tests/test_ui.cpp` asserts this explicitly by loading a second fixture
 (`data/ui/alt.ui.json`) that adds a panel and checking that the tree grows.
 
+### Scene files
+
+`data/scenes/*.json` are loaded by the same core (`load_scene_from_file`) for both the app and the
+benchmark. A scene declares its name, seed, gravity, camera and a list of entities:
+
+```json
+{
+  "name": "Stacked boxes",
+  "seed": 1337,
+  "gravity": [0.0, -9.81, 0.0],
+  "camera": { "eye": [0.0, 9.0, 19.0], "target": [0.0, 3.0, 0.0] },
+  "entities": [
+    { "tag": "floor", "shape": "aabb", "half_extents": [10, 0.5, 10],
+      "position": [0, -0.5, 0], "static": true, "friction": 0.6 },
+    { "tag": "crate", "shape": "aabb", "half_extents": [0.5, 0.5, 0.5],
+      "position": [0, 0.55, 0], "offset": [0, 1.02, 0], "repeat": 6 },
+    { "tag": "wedge", "shape": "obb", "half_extents": [1.2, 0.2, 0.8],
+      "position": [2.5, 1.2, 3.0], "rotation_euler_deg": [0, 0, 30] }
+  ]
+}
+```
+
+Shapes are `aabb`, `obb` and `sphere`; `repeat` + `offset` instantiate N copies with a cumulative
+offset; `rotation_euler_deg` is applied as X→Y→Z. Unknown shapes and empty entity lists are
+rejected with a message rather than silently ignored.
+
 ## How to run
 
 Requires CMake ≥ 3.16, a C++17 compiler, and network access the first time (CMake fetches
@@ -188,19 +215,30 @@ ctest --test-dir build --output-on-failure
 # Windowed sandbox app
 cmake -S . -B build-app -DMINIENGINE_BUILD_APP=ON
 cmake --build build-app -j
-./build-app/app/minieng_sandbox                 # or --frames 300 to auto-exit
+./build-app/app/minieng_sandbox                     # or --frames 300 to auto-exit
+./build-app/app/minieng_sandbox --scene data/scenes/obb_pile.json
 
 # Benchmark (headless)
 cmake --build build --target minieng_bench -j
-./build/tools/minieng_bench > results/bench.txt
+./build/tools/minieng_bench > results/bench.txt                 # standard scenario set
+./build/tools/minieng_bench --scene data/scenes/ramp_spheres.json   # a single scene file
+
+# Sanitizer build (AddressSanitizer + UndefinedBehaviorSanitizer)
+cmake -S . -B build-san -DMINIENGINE_BUILD_APP=OFF -DMINIENGINE_SANITIZE=ON
+cmake --build build-san -j && ctest --test-dir build-san --output-on-failure
+
+# Format the sources
+clang-format -i $(git ls-files '*.hpp' '*.cpp')
 ```
 
 Useful options: `-DMINIENGINE_BUILD_APP=OFF` (default ON), `-DMINIENGINE_BUILD_TESTS=ON`,
 `-DMINIENGINE_BUILD_TOOLS=ON`, `-DMINIENGINE_WERROR=ON` (warnings as errors on first-party
-targets only).
+targets only), `-DMINIENGINE_SANITIZE=ON`.
 
 Sandbox controls: arrow keys / WASD / D-pad move focus, Tab / Shift+Tab cycle widgets,
-Enter/Space activates, left-click in the viewport selects the entity under the cursor.
+Enter/Space activates, left-click in the viewport selects the entity under the cursor. The
+`Pause`/`Step`/`Reset` buttons drive the deterministic replay control (reset rebuilds the scene
+from its seed).
 
 ### Changing the UI without rebuilding
 
@@ -224,12 +262,12 @@ background load.
 ```
 === (a) broadphase: brute force vs sweep-and-prune ===
   bodies  broadphase     mean_ms     p95_ms     max_ms        pairs     contacts
-     500  bruteforce       0.484      0.667      8.526         64.8         64.8
-     500  sap              0.125      0.173     15.068         64.8         64.8
-    2000  bruteforce      12.894     30.793    111.639        307.5        307.5
-    2000  sap              1.121      1.826     34.551        307.5        307.5
-    5000  bruteforce      56.056    110.309    299.329       1008.2       1008.2
-    5000  sap              2.951      3.967     21.823       1008.2       1008.2
+     500  bruteforce       0.642      1.190     14.377         64.8         64.8
+     500  sap              0.165      0.190     11.999         64.8         64.8
+    2000  bruteforce       7.540     14.007     66.749        307.5        307.5
+    2000  sap              0.643      0.964     22.884        307.5        307.5
+    5000  bruteforce      45.455     76.794    213.878       1008.2       1008.2
+    5000  sap              2.344      2.885      6.555       1008.2       1008.2
 ```
 
 1800 ticks per configuration, 60 warm-up ticks discarded, fixed seeds, zero gravity (bodies are
@@ -240,24 +278,24 @@ convergence). "pairs" and "contacts" are per-tick averages.
 
 | Bodies | Brute force mean / p95 (ms) | Sweep-and-prune mean / p95 (ms) | Speedup (mean) | Candidate pairs / tick |
 | ---: | ---: | ---: | ---: | ---: |
-| 500 | 0.484 / 0.667 | 0.125 / 0.173 | 3.9× | 64.8 |
-| 2000 | 12.894 / 30.793 | 1.121 / 1.826 | 11.5× | 307.5 |
-| 5000 | 56.056 / 110.309 | 2.951 / 3.967 | 19.0× | 1008.2 |
+| 500 | 0.642 / 1.190 | 0.165 / 0.190 | 3.9× | 64.8 |
+| 2000 | 7.540 / 14.007 | 0.643 / 0.964 | 11.7× | 307.5 |
+| 5000 | 45.455 / 76.794 | 2.344 / 2.885 | 19.4× | 1008.2 |
 
 Both broadphases produce the **same** candidate pairs and the same contacts (1008.2 per tick at
 5000 bodies); only the cost differs. That equality is asserted every test run by
-`test_physics.cpp` (200 randomized scenes) and `test_query_fuzz.cpp`.
+`test_physics.cpp` (200 randomized scenes) and `test_query_fuzz.cpp` (10k rays + 10k sweeps).
 
 ### Per-system frame breakdown — 5000 bodies, sweep-and-prune
 
 | System | Mean (ms) | Share |
 | --- | ---: | ---: |
-| integrate | 0.093 | 3.2% |
-| broadphase | 2.451 | 83.1% |
-| narrowphase | 0.159 | 5.4% |
-| resolve | 0.099 | 3.4% |
-| transforms | 0.154 | 5.2% |
-| **tick total** | **2.951** | **100.0%** |
+| integrate | 0.076 | 3.3% |
+| broadphase | 1.987 | 84.8% |
+| narrowphase | 0.096 | 4.1% |
+| resolve | 0.064 | 2.7% |
+| transforms | 0.111 | 4.8% |
+| **tick total** | **2.344** | **100.0%** |
 
 The broadphase share includes recomputing 5000 world-space AABBs and sorting them each tick, which
 is what dominates at this body count.
@@ -266,8 +304,8 @@ is what dominates at this body count.
 
 | Query | Count | Wall time (ms) | Throughput | Hit rate |
 | --- | ---: | ---: | ---: | ---: |
-| Raycast (sphere / AABB / OBB, nearest hit) | 100000 | 1936.991 | **51,626 /s** | 1.00 |
-| AABB sweep (tunnelling-safe) | 100000 | 1699.678 | **58,835 /s** | 0.92 |
+| Raycast (sphere / AABB / OBB, nearest hit) | 100000 | 2125.745 | **47,042 /s** | 1.00 |
+| AABB sweep (tunnelling-safe) | 100000 | 1656.836 | **60,356 /s** | 0.92 |
 
 ### Determinism
 
@@ -285,28 +323,33 @@ hashes. It also verifies that perturbing a single input is detected.
 
 | Item | Value |
 | --- | --- |
-| `ctest` targets | 7 |
-| GoogleTest cases | 66 |
-| `ctest` wall time | 0.34 s |
+| `ctest` targets | 8 |
+| GoogleTest cases | 72 |
+| `ctest` wall time | 1.45 s |
 | Failures | 0 |
+
+The suite also passes cleanly under `-DMINIENGINE_SANITIZE=ON`
+(AddressSanitizer + UndefinedBehaviorSanitizer, `-fno-sanitize-recover=undefined`): 8/8 targets,
+3.12 s.
 
 ### Lines of code
 
 | Component | Lines |
 | --- | ---: |
-| `engine/` (window-free core) | 4429 |
-| `tests/` | 1984 |
-| `app/` (GLFW + Dear ImGui) | 730 |
-| `tools/` (benchmark) | 436 |
-| **Total** | **7579** across 34 `.hpp`/`.cpp` files |
+| `engine/` (window-free core) | 4728 |
+| `tests/` | 2155 |
+| `app/` (GLFW + Dear ImGui) | 756 |
+| `tools/` (benchmark) | 536 |
+| **Total** | **8175** across 37 `.hpp`/`.cpp` files |
 
 ### Caveats on these numbers
 
-- Timings are wall-clock on a laptop with background load, so absolute `mean_ms` values move
-  between runs even at fixed seeds. A previous run of the same binary measured the 5000-body SAP
-  tick at 8.59 ms mean / 24.61 ms p95 (and 16.1k raycasts/s) under heavier load; the paired
-  brute-force-vs-SAP comparison and the deterministic outputs (pair counts, hashes) are stable.
-- `min`-of-`p50` numbers are unaffected by warm-up because 60 ticks are discarded.
+- Timings are wall-clock on a laptop with background load, so absolute values move between runs
+  even at fixed seeds. Across four recorded runs of the same binary the 5000-body sweep-and-prune
+  mean was 2.34 / 2.38 / 3.05 / 4.01 ms and raycast throughput was 47k / 50k / 26k / 15k per
+  second, tracking system load (load average 5–15 during measurement). The deterministic outputs —
+  candidate pair counts, contact counts and hashes — were identical in every run.
+- Because 60 warm-up ticks are discarded, warm-up effects do not skew the reported statistics.
 
 ## Limitations / next steps
 

@@ -59,8 +59,7 @@ struct ReplaySim {
                 body->velocity.z += input_y * 12.0f * dt;
             }
         });
-        loop.set_system(SystemStage::PhysicsIntegrate,
-                        [this](float dt) { physics.integrate(dt); });
+        loop.set_system(SystemStage::PhysicsIntegrate, [this](float dt) { physics.integrate(dt); });
         loop.set_system(SystemStage::CollisionResolve, [this](float dt) {
             physics.build_broadphase();
             const std::vector<Pair> pairs = physics.broadphase_pairs();
@@ -156,7 +155,7 @@ std::vector<std::uint64_t> replay_hashes(const Replay& replay) {
     return hashes;
 }
 
-}  // namespace
+} // namespace
 
 TEST(Determinism, ReplayFileRecordsTwelveHundredTicks) {
     const std::string path = replay_path();

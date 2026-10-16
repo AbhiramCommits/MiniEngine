@@ -1,0 +1,19 @@
+{
+  "name": "Rotated OBB pile",
+  "seed": 424242,
+  "gravity": [0.0, -9.81, 0.0],
+  "camera": { "eye": [7.0, 9.0, 15.0], "target": [0.0, 2.0, 0.0] },
+  "entities": [
+    { "tag": "floor", "shape": "aabb", "half_extents": [12.0, 0.5, 12.0], "position": [0.0, -0.5, 0.0], "static": true, "friction": 0.6, "restitution": 0.05 },
+
+    { "tag": "slab", "shape": "obb", "half_extents": [1.4, 0.2, 0.9], "position": [-2.0, 0.8, 0.0], "rotation_euler_deg": [0.0, 0.0, 25.0], "mass": 1.4, "restitution": 0.2, "friction": 0.5 },
+    { "tag": "slab", "shape": "obb", "half_extents": [1.4, 0.2, 0.9], "position": [0.0, 1.9, 0.4], "rotation_euler_deg": [0.0, 40.0, -15.0], "mass": 1.4, "restitution": 0.2, "friction": 0.5 },
+    { "tag": "slab", "shape": "obb", "half_extents": [1.4, 0.2, 0.9], "position": [1.8, 3.2, -0.5], "rotation_euler_deg": [15.0, 0.0, 55.0], "mass": 1.4, "restitution": 0.2, "friction": 0.5 },
+    { "tag": "slab", "shape": "obb", "half_extents": [1.4, 0.2, 0.9], "position": [-1.0, 4.6, 0.2], "rotation_euler_deg": [0.0, -30.0, 10.0], "mass": 1.4, "restitution": 0.2, "friction": 0.5 },
+
+    { "tag": "pillar", "shape": "obb", "half_extents": [0.35, 1.6, 0.35], "position": [4.0, 1.6, -1.5], "rotation_euler_deg": [0.0, 20.0, 8.0], "mass": 2.0, "restitution": 0.15, "friction": 0.6 },
+    { "tag": "pillar", "shape": "obb", "half_extents": [0.35, 1.6, 0.35], "position": [-4.5, 1.6, 1.5], "rotation_euler_deg": [0.0, -35.0, -6.0], "mass": 2.0, "restitution": 0.15, "friction": 0.6 },
+
+    { "tag": "pellet", "shape": "sphere", "radius": 0.4, "position": [-1.0, 7.0, 0.0], "offset": [0.9, 0.8, 0.6], "repeat": 6, "mass": 0.5, "restitution": 0.4, "friction": 0.4 }
+  ]
+}

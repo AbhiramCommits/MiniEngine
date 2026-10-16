@@ -66,5 +66,5 @@ private:
     float cross_axis_weight_ = 2.0f;
 };
 
-}  // namespace ui
-}  // namespace minieng
+} // namespace ui
+} // namespace minieng

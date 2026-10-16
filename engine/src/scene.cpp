@@ -6,7 +6,7 @@ namespace minieng {
 
 namespace {
 const Mat4 kIdentity = Mat4::identity();
-}  // namespace
+} // namespace
 
 int Scene::create_node(int parent, EntityId owner) {
     SceneNode node;
@@ -173,4 +173,4 @@ void Scene::clear() {
     entity_to_node_.clear();
 }
 
-}  // namespace minieng
+} // namespace minieng

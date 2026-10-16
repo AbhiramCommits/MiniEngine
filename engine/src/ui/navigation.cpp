@@ -62,7 +62,9 @@ bool UiContext::focus_index(std::size_t index) {
     return true;
 }
 
-void UiContext::clear_focus() { focused_.clear(); }
+void UiContext::clear_focus() {
+    focused_.clear();
+}
 
 bool UiContext::move_focus(FocusDir dir) {
     if (items_.empty()) {
@@ -113,10 +115,22 @@ bool UiContext::move_spatial(FocusDir dir) {
     float axis_sign = 1.0f;
     bool horizontal = true;
     switch (dir) {
-        case FocusDir::Left: axis_sign = -1.0f; horizontal = true; break;
-        case FocusDir::Right: axis_sign = 1.0f; horizontal = true; break;
-        case FocusDir::Up: axis_sign = -1.0f; horizontal = false; break;
-        case FocusDir::Down: axis_sign = 1.0f; horizontal = false; break;
+        case FocusDir::Left:
+            axis_sign = -1.0f;
+            horizontal = true;
+            break;
+        case FocusDir::Right:
+            axis_sign = 1.0f;
+            horizontal = true;
+            break;
+        case FocusDir::Up:
+            axis_sign = -1.0f;
+            horizontal = false;
+            break;
+        case FocusDir::Down:
+            axis_sign = 1.0f;
+            horizontal = false;
+            break;
         default: return false;
     }
 
@@ -134,20 +148,20 @@ bool UiContext::move_spatial(FocusDir dir) {
             if (item.id == current->id) {
                 continue;
             }
-            const float primary = horizontal ? (item.rect.center_x() - cx)
-                                             : (item.rect.center_y() - cy);
-            const float cross = horizontal ? (item.rect.center_y() - cy)
-                                           : (item.rect.center_x() - cx);
+            const float primary =
+                horizontal ? (item.rect.center_x() - cx) : (item.rect.center_y() - cy);
+            const float cross =
+                horizontal ? (item.rect.center_y() - cy) : (item.rect.center_x() - cx);
 
             float score = 0.0f;
             if (pass == 0) {
                 if (primary * axis_sign <= 0.0f) {
-                    continue;  // not in the requested direction
+                    continue; // not in the requested direction
                 }
                 score = std::fabs(primary) + cross_axis_weight_ * std::fabs(cross);
             } else {
                 if (primary * axis_sign >= 0.0f) {
-                    continue;  // must be on the opposite side to wrap
+                    continue; // must be on the opposite side to wrap
                 }
                 // Farthest opposite item wins; alignment only breaks ties.
                 score = -std::fabs(primary) + cross_axis_weight_ * std::fabs(cross) * 1.0e-3f;
@@ -175,5 +189,5 @@ bool UiContext::activate() {
     return bindings_->activate(item->binding);
 }
 
-}  // namespace ui
-}  // namespace minieng
+} // namespace ui
+} // namespace minieng

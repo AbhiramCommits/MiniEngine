@@ -37,4 +37,4 @@ private:
     std::uint64_t state_;
 };
 
-}  // namespace minieng
+} // namespace minieng

@@ -35,9 +35,9 @@ enum class Direction { None, Row, Column };
 
 struct Widget {
     std::string id;
-    std::string type;      // panel, label, button, slider, checkbox, list
+    std::string type; // panel, label, button, slider, checkbox, list
     std::string text;
-    std::string binding;   // BindingTable name (empty == unbound)
+    std::string binding; // BindingTable name (empty == unbound)
     float min = 0.0f;
     float max = 1.0f;
 
@@ -52,7 +52,7 @@ struct Widget {
     float padding = 0.0f;
     float spacing = 0.0f;
 
-    Rect rect;             // computed by Layout::compute_layout
+    Rect rect; // computed by Layout::compute_layout
     bool focusable = false;
     std::vector<Widget> children;
 };
@@ -86,5 +86,5 @@ private:
 float default_widget_width(const Widget& widget);
 float default_widget_height(const Widget& widget);
 
-}  // namespace ui
-}  // namespace minieng
+} // namespace ui
+} // namespace minieng

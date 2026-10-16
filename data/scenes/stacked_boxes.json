@@ -1,0 +1,16 @@
+{
+  "name": "Stacked boxes",
+  "seed": 1337,
+  "gravity": [0.0, -9.81, 0.0],
+  "camera": { "eye": [0.0, 9.0, 19.0], "target": [0.0, 3.0, 0.0] },
+  "entities": [
+    { "tag": "floor", "shape": "aabb", "half_extents": [10.0, 0.5, 10.0], "position": [0.0, -0.5, 0.0], "static": true, "friction": 0.6, "restitution": 0.05 },
+
+    { "tag": "crate", "shape": "aabb", "half_extents": [0.5, 0.5, 0.5], "position": [0.0, 0.55, 0.0], "offset": [0.0, 1.02, 0.0], "repeat": 6, "mass": 1.0, "restitution": 0.1, "friction": 0.6 },
+
+    { "tag": "ball", "shape": "sphere", "radius": 0.5, "position": [-3.0, 6.0, 0.5], "mass": 0.8, "restitution": 0.6, "friction": 0.3 },
+    { "tag": "ball", "shape": "sphere", "radius": 0.5, "position": [3.0, 9.0, -0.5], "mass": 0.8, "restitution": 0.6, "friction": 0.3 },
+
+    { "tag": "wedge", "shape": "obb", "half_extents": [1.2, 0.2, 0.8], "position": [2.5, 1.2, 3.0], "rotation_euler_deg": [0.0, 0.0, 30.0], "mass": 1.5, "restitution": 0.2, "friction": 0.5 }
+  ]
+}

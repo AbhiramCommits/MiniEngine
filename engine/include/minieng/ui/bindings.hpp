@@ -99,5 +99,5 @@ struct SimControl {
 void register_simulation_bindings(BindingTable& table, World& world, Scene& scene,
                                   PhysicsConfig& config, EntityId& selected, SimControl& control);
 
-}  // namespace ui
-}  // namespace minieng
+} // namespace ui
+} // namespace minieng

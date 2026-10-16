@@ -22,8 +22,8 @@ struct Transform {
 };
 
 struct SceneNode {
-    EntityId id = kInvalidEntity;   // owning entity (optional)
-    int parent = -1;                // -1 == root
+    EntityId id = kInvalidEntity; // owning entity (optional)
+    int parent = -1;              // -1 == root
     std::vector<int> children;
     Transform local;
     Mat4 world = Mat4::identity();
@@ -74,4 +74,4 @@ private:
     std::unordered_map<EntityId, int> entity_to_node_;
 };
 
-}  // namespace minieng
+} // namespace minieng

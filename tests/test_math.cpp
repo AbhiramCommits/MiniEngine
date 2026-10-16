@@ -27,7 +27,7 @@ std::vector<RotationCase> rotation_cases() {
     };
 }
 
-}  // namespace
+} // namespace
 
 TEST(Math, Vec3Basics) {
     const Vec3 a(1.0f, 2.0f, 3.0f);
@@ -50,11 +50,8 @@ TEST(Math, Vec3Basics) {
 
 TEST(Math, QuatRotationMatchesMatrixRotation) {
     const std::vector<Vec3> points = {
-        Vec3(1.0f, 0.0f, 0.0f),
-        Vec3(0.0f, 1.0f, 0.0f),
-        Vec3(0.0f, 0.0f, 1.0f),
-        Vec3(2.0f, -3.0f, 0.75f),
-        Vec3(-1.5f, 0.25f, 4.0f),
+        Vec3(1.0f, 0.0f, 0.0f),   Vec3(0.0f, 1.0f, 0.0f),   Vec3(0.0f, 0.0f, 1.0f),
+        Vec3(2.0f, -3.0f, 0.75f), Vec3(-1.5f, 0.25f, 4.0f),
     };
 
     for (const auto& rc : rotation_cases()) {
@@ -131,7 +128,7 @@ TEST(Math, SlerpConstantAngularVelocityMidpoint) {
         const float t = static_cast<float>(i) / static_cast<float>(steps);
         const Vec3 v = slerp(a, b, t).rotate_vector(Vec3::unit_y());
         // Rotating +Y about +Z by theta yields (-sin theta, cos theta, 0).
-        const float angle = -std::atan2(v.x, v.y);  // yaw about Z
+        const float angle = -std::atan2(v.x, v.y); // yaw about Z
         const float delta = angle - prev_angle;
         EXPECT_NEAR(delta, kHalfPi / static_cast<float>(steps), 1.0e-4f);
         prev_angle = angle;
@@ -182,11 +179,13 @@ TEST(Math, InverseAffineRoundTrip) {
 
     // Translation-only and scale-only inverses behave too.
     const Mat4 t = Mat4::from_translation(Vec3(-1.0f, 4.0f, 2.0f));
-    EXPECT_TRUE(t.inverse_affine().transform_point(t.transform_point(Vec3(3, 3, 3)))
+    EXPECT_TRUE(t.inverse_affine()
+                    .transform_point(t.transform_point(Vec3(3, 3, 3)))
                     .approx_equal_to(Vec3(3, 3, 3), 1.0e-5f));
 
     const Mat4 s = Mat4::from_scale(Vec3(2.0f, 0.5f, 4.0f));
-    EXPECT_TRUE(s.inverse_affine().transform_point(s.transform_point(Vec3(1, 1, 1)))
+    EXPECT_TRUE(s.inverse_affine()
+                    .transform_point(s.transform_point(Vec3(1, 1, 1)))
                     .approx_equal_to(Vec3(1, 1, 1), 1.0e-5f));
 }
 
@@ -195,8 +194,8 @@ TEST(Math, CompositionIsNonCommutative) {
     const Mat4 r = Mat4::from_quat(Quat::from_axis_angle(Vec3::unit_z(), kHalfPi));
 
     const Vec3 p(1.0f, 0.0f, 0.0f);
-    const Vec3 tr = (t * r).transform_point(p);  // rotate then translate
-    const Vec3 rt = (r * t).transform_point(p);  // translate then rotate
+    const Vec3 tr = (t * r).transform_point(p); // rotate then translate
+    const Vec3 rt = (r * t).transform_point(p); // translate then rotate
 
     EXPECT_TRUE(tr.approx_equal_to(Vec3(5.0f, 1.0f, 0.0f), 1.0e-5f));
     EXPECT_TRUE(rt.approx_equal_to(Vec3(0.0f, 6.0f, 0.0f), 1.0e-5f));
@@ -246,8 +245,7 @@ TEST(Math, CameraProjectionAndView) {
     // A point on the view axis projects to the centre of the screen.
     EXPECT_NEAR(clip_w(Vec3::zero()), 10.0f, 1.0e-3f);
     const Vec3 ndc = Vec3(view_proj.transform_point(Vec3::zero()).x / clip_w(Vec3::zero()),
-                          view_proj.transform_point(Vec3::zero()).y / clip_w(Vec3::zero()),
-                          0.0f);
+                          view_proj.transform_point(Vec3::zero()).y / clip_w(Vec3::zero()), 0.0f);
     EXPECT_NEAR(ndc.x, 0.0f, 1.0e-4f);
     EXPECT_NEAR(ndc.y, 0.0f, 1.0e-4f);
 

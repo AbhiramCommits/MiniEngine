@@ -23,7 +23,7 @@ FixedLoop::FixedLoop(float dt, int max_substeps) {
 }
 
 void FixedLoop::set_dt(float dt) {
-    if (dt > 0.0f && dt == dt) {  // reject NaN / non-positive
+    if (dt > 0.0f && dt == dt) { // reject NaN / non-positive
         dt_ = dt;
     }
 }
@@ -90,4 +90,4 @@ void FixedLoop::reset() {
     tick_count_ = 0;
 }
 
-}  // namespace minieng
+} // namespace minieng

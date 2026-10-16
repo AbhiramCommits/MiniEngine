@@ -11,17 +11,24 @@ namespace ui {
 namespace {
 
 Anchor parse_anchor(const std::string& value) {
-    if (value == "top-right") return Anchor::TopRight;
-    if (value == "bottom-left") return Anchor::BottomLeft;
-    if (value == "bottom-right") return Anchor::BottomRight;
-    if (value == "center") return Anchor::Center;
-    if (value == "stretch") return Anchor::Stretch;
+    if (value == "top-right")
+        return Anchor::TopRight;
+    if (value == "bottom-left")
+        return Anchor::BottomLeft;
+    if (value == "bottom-right")
+        return Anchor::BottomRight;
+    if (value == "center")
+        return Anchor::Center;
+    if (value == "stretch")
+        return Anchor::Stretch;
     return Anchor::TopLeft;
 }
 
 Direction parse_direction(const std::string& value) {
-    if (value == "row") return Direction::Row;
-    if (value == "column") return Direction::Column;
+    if (value == "row")
+        return Direction::Row;
+    if (value == "column")
+        return Direction::Column;
     return Direction::None;
 }
 
@@ -35,16 +42,26 @@ Widget parse_widget(const Json& node, std::string& error_out) {
     widget.type = node["type"].as_string();
     widget.text = node["text"].as_string();
     widget.binding = node["binding"].as_string();
-    if (node.has("min")) widget.min = node["min"].as_float();
-    if (node.has("max")) widget.max = node["max"].as_float();
-    if (node.has("x")) widget.offset_x = node["x"].as_float();
-    if (node.has("y")) widget.offset_y = node["y"].as_float();
-    if (node.has("width")) widget.width = node["width"].as_float();
-    if (node.has("height")) widget.height = node["height"].as_float();
-    if (node.has("anchor")) widget.anchor = parse_anchor(node["anchor"].as_string());
-    if (node.has("direction")) widget.direction = parse_direction(node["direction"].as_string());
-    if (node.has("padding")) widget.padding = node["padding"].as_float();
-    if (node.has("spacing")) widget.spacing = node["spacing"].as_float();
+    if (node.has("min"))
+        widget.min = node["min"].as_float();
+    if (node.has("max"))
+        widget.max = node["max"].as_float();
+    if (node.has("x"))
+        widget.offset_x = node["x"].as_float();
+    if (node.has("y"))
+        widget.offset_y = node["y"].as_float();
+    if (node.has("width"))
+        widget.width = node["width"].as_float();
+    if (node.has("height"))
+        widget.height = node["height"].as_float();
+    if (node.has("anchor"))
+        widget.anchor = parse_anchor(node["anchor"].as_string());
+    if (node.has("direction"))
+        widget.direction = parse_direction(node["direction"].as_string());
+    if (node.has("padding"))
+        widget.padding = node["padding"].as_float();
+    if (node.has("spacing"))
+        widget.spacing = node["spacing"].as_float();
     widget.focusable = node.has("focusable") ? node["focusable"].as_bool()
                                              : type_is_focusable_by_default(widget.type);
     if (widget.id.empty()) {
@@ -64,24 +81,34 @@ inline Rect inset(const Rect& r, float padding) {
     return Rect{r.x + padding, r.y + padding, r.w - 2.0f * padding, r.h - 2.0f * padding};
 }
 
-}  // namespace
+} // namespace
 
 float default_widget_width(const Widget& widget) {
-    if (widget.type == "panel") return 220.0f;
-    if (widget.type == "button") return 120.0f;
-    if (widget.type == "slider") return 180.0f;
-    if (widget.type == "checkbox") return 160.0f;
-    if (widget.type == "list") return 200.0f;
-    return 200.0f;  // label and unknown types
+    if (widget.type == "panel")
+        return 220.0f;
+    if (widget.type == "button")
+        return 120.0f;
+    if (widget.type == "slider")
+        return 180.0f;
+    if (widget.type == "checkbox")
+        return 160.0f;
+    if (widget.type == "list")
+        return 200.0f;
+    return 200.0f; // label and unknown types
 }
 
 float default_widget_height(const Widget& widget) {
-    if (widget.type == "panel") return 200.0f;
-    if (widget.type == "button") return 26.0f;
-    if (widget.type == "slider") return 22.0f;
-    if (widget.type == "checkbox") return 22.0f;
-    if (widget.type == "list") return 120.0f;
-    return 22.0f;  // label and unknown types
+    if (widget.type == "panel")
+        return 200.0f;
+    if (widget.type == "button")
+        return 26.0f;
+    if (widget.type == "slider")
+        return 22.0f;
+    if (widget.type == "checkbox")
+        return 22.0f;
+    if (widget.type == "list")
+        return 120.0f;
+    return 22.0f; // label and unknown types
 }
 
 Layout Layout::parse(const std::string& text, std::string* error) {
@@ -89,18 +116,22 @@ Layout Layout::parse(const std::string& text, std::string* error) {
     std::string local_error;
     const Json root = Json::parse(text, &local_error);
     if (!local_error.empty()) {
-        if (error) *error = local_error;
+        if (error)
+            *error = local_error;
         return layout;
     }
     if (!root.is_object()) {
-        if (error) *error = "layout root must be a JSON object";
+        if (error)
+            *error = "layout root must be a JSON object";
         return layout;
     }
 
     if (root["viewport"].is_object()) {
         const Json& vp = root["viewport"];
-        if (vp.has("width")) layout.viewport_width_ = vp["width"].as_float();
-        if (vp.has("height")) layout.viewport_height_ = vp["height"].as_float();
+        if (vp.has("width"))
+            layout.viewport_width_ = vp["width"].as_float();
+        if (vp.has("height"))
+            layout.viewport_height_ = vp["height"].as_float();
     }
     if (root.has("padding")) {
         layout.padding_ = root["padding"].as_float();
@@ -108,7 +139,8 @@ Layout Layout::parse(const std::string& text, std::string* error) {
 
     const Json& widgets = root["widgets"];
     if (!widgets.is_array()) {
-        if (error) *error = "layout must contain a 'widgets' array";
+        if (error)
+            *error = "layout must contain a 'widgets' array";
         return layout;
     }
     for (const Json& node : widgets.items()) {
@@ -203,11 +235,15 @@ void layout_widget(Widget& widget, const Rect& frame, bool stacked) {
         }
     } else {
         if (widget.anchor == Anchor::Stretch) {
-            if (width < 0.0f) width = frame.w;
-            if (height < 0.0f) height = frame.h;
+            if (width < 0.0f)
+                width = frame.w;
+            if (height < 0.0f)
+                height = frame.h;
         } else {
-            if (width < 0.0f) width = default_widget_width(widget);
-            if (height < 0.0f) height = default_widget_height(widget);
+            if (width < 0.0f)
+                width = default_widget_width(widget);
+            if (height < 0.0f)
+                height = default_widget_height(widget);
         }
     }
 
@@ -217,8 +253,8 @@ void layout_widget(Widget& widget, const Rect& frame, bool stacked) {
     } else {
         switch (widget.anchor) {
             case Anchor::TopLeft:
-                widget.rect = Rect{frame.x + widget.offset_x, frame.y + widget.offset_y, width,
-                                   height};
+                widget.rect =
+                    Rect{frame.x + widget.offset_x, frame.y + widget.offset_y, width, height};
                 break;
             case Anchor::TopRight:
                 widget.rect = Rect{frame.x + frame.w - width - widget.offset_x,
@@ -233,13 +269,13 @@ void layout_widget(Widget& widget, const Rect& frame, bool stacked) {
                                    frame.y + frame.h - height - widget.offset_y, width, height};
                 break;
             case Anchor::Center:
-                widget.rect = Rect{frame.x + (frame.w - width) * 0.5f + widget.offset_x,
-                                   frame.y + (frame.h - height) * 0.5f + widget.offset_y, width,
-                                   height};
+                widget.rect =
+                    Rect{frame.x + (frame.w - width) * 0.5f + widget.offset_x,
+                         frame.y + (frame.h - height) * 0.5f + widget.offset_y, width, height};
                 break;
             case Anchor::Stretch:
-                widget.rect = Rect{frame.x + widget.offset_x, frame.y + widget.offset_y, width,
-                                   height};
+                widget.rect =
+                    Rect{frame.x + widget.offset_x, frame.y + widget.offset_y, width, height};
                 break;
         }
     }
@@ -269,7 +305,7 @@ void layout_widget(Widget& widget, const Rect& frame, bool stacked) {
     }
 }
 
-}  // namespace
+} // namespace
 
 void Layout::compute_layout(float viewport_width, float viewport_height) {
     viewport_width_ = viewport_width;
@@ -282,5 +318,5 @@ void Layout::compute_layout(float viewport_width, float viewport_height) {
     }
 }
 
-}  // namespace ui
-}  // namespace minieng
+} // namespace ui
+} // namespace minieng

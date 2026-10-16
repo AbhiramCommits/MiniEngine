@@ -25,6 +25,7 @@
 #include "minieng/profiler.hpp"
 #include "minieng/rng.hpp"
 #include "minieng/scene.hpp"
+#include "minieng/scene_loader.hpp"
 #include "minieng/world.hpp"
 
 using namespace minieng;
@@ -100,7 +101,8 @@ void build_box_scene(BenchScene& sim, int bodies, std::uint64_t seed, bool use_s
         const Vec3 half(rng.range(0.35f, 0.65f), rng.range(0.35f, 0.65f), rng.range(0.35f, 0.65f));
         const EntityId id = add_box(sim.world, sim.scene, position, half, false, 0.2f, 0.4f);
         RigidBody* body = sim.world.get_rigid_body(id);
-        body->velocity = Vec3(rng.range(-0.4f, 0.4f), rng.range(-0.4f, 0.4f), rng.range(-0.4f, 0.4f));
+        body->velocity =
+            Vec3(rng.range(-0.4f, 0.4f), rng.range(-0.4f, 0.4f), rng.range(-0.4f, 0.4f));
     }
 
     sim.scene.update_world_transforms();
@@ -187,6 +189,48 @@ TickRun run_ticks(BenchScene& sim, int total_ticks, int warmup_ticks) {
     return run;
 }
 
+struct QueryResult {
+    int count = 0;
+    double ray_ms = 0.0;
+    int ray_hits = 0;
+    double sweep_ms = 0.0;
+    int sweep_hits = 0;
+};
+
+QueryResult measure_queries(PhysicsWorld& physics, int count, std::uint64_t seed) {
+    QueryResult result;
+    result.count = count;
+    physics.build_broadphase();
+
+    Rng rng(seed);
+    const double t0 = now_ms();
+    for (int i = 0; i < count; ++i) {
+        const Vec3 origin(rng.range(-25.0f, 25.0f), rng.range(10.0f, 55.0f),
+                          rng.range(-25.0f, 25.0f));
+        const Vec3 dir(rng.range(-1.0f, 1.0f), -1.0f, rng.range(-1.0f, 1.0f));
+        if (physics.raycast(origin, dir, 200.0f).hit) {
+            ++result.ray_hits;
+        }
+    }
+    result.ray_ms = now_ms() - t0;
+
+    const Vec3 half(0.4f, 0.4f, 0.4f);
+    const double t1 = now_ms();
+    for (int i = 0; i < count; ++i) {
+        const Vec3 from(rng.range(-25.0f, 25.0f), rng.range(10.0f, 55.0f),
+                        rng.range(-25.0f, 25.0f));
+        const Vec3 to = from + Vec3(rng.range(-6.0f, 6.0f), -20.0f, rng.range(-6.0f, 6.0f));
+        Aabb box;
+        box.min = from - half;
+        box.max = from + half;
+        if (physics.sweep_aabb(box, from, to).hit) {
+            ++result.sweep_hits;
+        }
+    }
+    result.sweep_ms = now_ms() - t1;
+    return result;
+}
+
 std::string machine_description() {
 #if defined(__APPLE__)
     return "macOS " + std::string(sizeof(void*) == 8 ? "64-bit" : "32-bit");
@@ -197,13 +241,92 @@ std::string machine_description() {
 #endif
 }
 
-}  // namespace
+// Benchmark a scene file supplied with --scene: one timed tick run plus query
+// throughput. Writes the same JSON shape under a "custom_scene" key.
+int run_scene_bench(const std::string& path, int ticks, int warmup, int queries,
+                    const std::string& json_path) {
+    BenchScene sim;
+    const SceneDescription desc = load_scene_from_file(path, sim.world, sim.scene);
+    if (!desc.ok) {
+        std::fprintf(stderr, "could not load scene '%s': %s\n", path.c_str(), desc.error.c_str());
+        return 1;
+    }
+    sim.physics.config().gravity = desc.gravity;
+    sim.physics.build_broadphase();
+
+    std::printf("=== custom scene: %s ===\n", desc.name.empty() ? path.c_str() : desc.name.c_str());
+    std::printf("file=%s entities=%zu gravity=(%.2f, %.2f, %.2f)\n", path.c_str(),
+                sim.world.entity_count(), static_cast<double>(desc.gravity.x),
+                static_cast<double>(desc.gravity.y), static_cast<double>(desc.gravity.z));
+
+    const TickRun run = run_ticks(sim, ticks, warmup);
+    std::printf("%8s  %-11s %10s %10s %10s %12s %12s\n", "bodies", "broadphase", "mean_ms",
+                "p95_ms", "max_ms", "pairs", "contacts");
+    std::printf("%8zu  %-11s %10.3f %10.3f %10.3f %12.1f %12.1f\n", sim.world.entity_count(), "sap",
+                run.stats.mean_ms, run.stats.p95_ms, run.stats.max_ms, run.mean_pairs,
+                run.mean_contacts);
+
+    std::printf("\n%-14s %10s %10s\n", "system", "mean_ms", "share");
+    for (const auto& entry : run.systems) {
+        if (entry.second.samples == 0) {
+            continue;
+        }
+        const double share =
+            run.stats.mean_ms > 1.0e-9 ? 100.0 * entry.second.mean_ms / run.stats.mean_ms : 0.0;
+        std::printf("%-14s %10.3f %9.1f%%\n", entry.first.c_str(), entry.second.mean_ms, share);
+    }
+
+    const QueryResult query = measure_queries(sim.physics, queries, 4242u);
+    const double ray_per_sec = query.ray_ms > 1.0e-9 ? query.count * 1000.0 / query.ray_ms : 0.0;
+    const double sweep_per_sec =
+        query.sweep_ms > 1.0e-9 ? query.count * 1000.0 / query.sweep_ms : 0.0;
+    std::printf("\nraycasts   %7d  %10.3f ms  %14.0f /s\n", query.count, query.ray_ms, ray_per_sec);
+    std::printf("sweeps     %7d  %10.3f ms  %14.0f /s\n", query.count, query.sweep_ms,
+                sweep_per_sec);
+
+    std::ostringstream json;
+    json.precision(6);
+    json << std::fixed;
+    json << "{\n";
+    json << "  \"generated_by\": \"minieng_bench\",\n";
+    json << "  \"mode\": \"custom_scene\",\n";
+    json << "  \"machine\": \"" << machine_description() << "\",\n";
+    json << "  \"scene\": \"" << path << "\",\n";
+    json << "  \"scene_name\": \"" << desc.name << "\",\n";
+    json << "  \"entities\": " << sim.world.entity_count() << ",\n";
+    json << "  \"ticks\": " << ticks << ",\n";
+    json << "  \"warmup_ticks\": " << warmup << ",\n";
+    json << "  \"mean_ms\": " << run.stats.mean_ms << ",\n";
+    json << "  \"p95_ms\": " << run.stats.p95_ms << ",\n";
+    json << "  \"mean_pairs\": " << run.mean_pairs << ",\n";
+    json << "  \"mean_contacts\": " << run.mean_contacts << ",\n";
+    json << "  \"raycasts\": " << query.count << ",\n";
+    json << "  \"raycasts_per_sec\": " << ray_per_sec << ",\n";
+    json << "  \"sweeps\": " << query.count << ",\n";
+    json << "  \"sweeps_per_sec\": " << sweep_per_sec << "\n";
+    json << "}\n";
+
+    std::error_code ec;
+    std::filesystem::create_directories(std::filesystem::path(json_path).parent_path(), ec);
+    std::ofstream out(json_path);
+    if (!out) {
+        std::fprintf(stderr, "could not write %s\n", json_path.c_str());
+        return 1;
+    }
+    out << json.str();
+    out.close();
+    std::printf("wrote %s\n", json_path.c_str());
+    return 0;
+}
+
+} // namespace
 
 int main(int argc, char** argv) {
     int ticks = 1800;
     int warmup = 60;
     int ray_queries = 100000;
     std::string json_path = "results/bench.json";
+    std::string scene_path;
 
     for (int i = 1; i < argc; ++i) {
         const std::string arg = argv[i];
@@ -220,11 +343,20 @@ int main(int argc, char** argv) {
             if (i + 1 < argc) {
                 json_path = argv[++i];
             }
+        } else if (arg == "--scene") {
+            if (i + 1 < argc) {
+                scene_path = argv[++i];
+            }
         } else if (arg == "--help" || arg == "-h") {
             std::printf(
-                "usage: minieng_bench [--ticks N] [--warmup N] [--queries N] [--json PATH]\n");
+                "usage: minieng_bench [--ticks N] [--warmup N] [--queries N] [--json PATH] "
+                "[--scene PATH]\n");
             return 0;
         }
+    }
+
+    if (!scene_path.empty()) {
+        return run_scene_bench(scene_path, ticks, warmup, ray_queries, json_path);
     }
 
     std::printf("MiniEngine benchmark\n");
@@ -277,9 +409,8 @@ int main(int argc, char** argv) {
     std::printf("=== (a) per-system breakdown, 5000 bodies, sap ===\n");
     std::printf("%-14s %10s %10s\n", "system", "mean_ms", "share");
     for (const auto& entry : system_rows) {
-        const double share = big_stats.mean_ms > 1.0e-9
-                                 ? 100.0 * entry.second.mean_ms / big_stats.mean_ms
-                                 : 0.0;
+        const double share =
+            big_stats.mean_ms > 1.0e-9 ? 100.0 * entry.second.mean_ms / big_stats.mean_ms : 0.0;
         std::printf("%-14s %10.3f %9.1f%%\n", entry.first.c_str(), entry.second.mean_ms, share);
     }
     std::printf("%-14s %10.3f %9.1f%%\n", "tick_total", big_stats.mean_ms, 100.0);
@@ -291,41 +422,11 @@ int main(int argc, char** argv) {
 
     // --- (b) query throughput ---------------------------------------------
     std::printf("=== (b) queries against the 5000-body scene ===\n");
-    big.physics.build_broadphase();
-
-    int ray_hits = 0;
-    double ray_ms = 0.0;
-    int sweep_hits = 0;
-    double sweep_ms = 0.0;
-    {
-        Rng rng(4242u);
-        const double t0 = now_ms();
-        for (int i = 0; i < ray_queries; ++i) {
-            const Vec3 origin(rng.range(-25.0f, 25.0f), rng.range(10.0f, 55.0f),
-                              rng.range(-25.0f, 25.0f));
-            const Vec3 dir(rng.range(-1.0f, 1.0f), -1.0f, rng.range(-1.0f, 1.0f));
-            if (big.physics.raycast(origin, dir, 200.0f).hit) {
-                ++ray_hits;
-            }
-        }
-        ray_ms = now_ms() - t0;
-
-        const Vec3 half(0.4f, 0.4f, 0.4f);
-        const double t1 = now_ms();
-        for (int i = 0; i < ray_queries; ++i) {
-            const Vec3 from(rng.range(-25.0f, 25.0f), rng.range(10.0f, 55.0f),
-                            rng.range(-25.0f, 25.0f));
-            const Vec3 to = from + Vec3(rng.range(-6.0f, 6.0f), -20.0f, rng.range(-6.0f, 6.0f));
-            Aabb box;
-            box.min = from - half;
-            box.max = from + half;
-            if (big.physics.sweep_aabb(box, from, to).hit) {
-                ++sweep_hits;
-            }
-        }
-        sweep_ms = now_ms() - t1;
-    }
-
+    const QueryResult query = measure_queries(big.physics, ray_queries, 4242u);
+    const int ray_hits = query.ray_hits;
+    const double ray_ms = query.ray_ms;
+    const int sweep_hits = query.sweep_hits;
+    const double sweep_ms = query.sweep_ms;
     const double ray_per_sec = ray_ms > 1.0e-9 ? ray_queries * 1000.0 / ray_ms : 0.0;
     const double sweep_per_sec = sweep_ms > 1.0e-9 ? ray_queries * 1000.0 / sweep_ms : 0.0;
     std::printf("raycasts   %7d  %10.3f ms  %14.0f /s  hit_rate=%.2f\n", ray_queries, ray_ms,
@@ -383,14 +484,13 @@ int main(int argc, char** argv) {
 
     json << "  \"systems_5000_sap\": [\n";
     for (std::size_t i = 0; i < system_rows.size(); ++i) {
-        const double share =
-            big_stats.mean_ms > 1.0e-9 ? 100.0 * system_rows[i].second.mean_ms /
-                                             big_stats.mean_ms
-                                       : 0.0;
+        const double share = big_stats.mean_ms > 1.0e-9
+                               ? 100.0 * system_rows[i].second.mean_ms / big_stats.mean_ms
+                               : 0.0;
         json << "    { \"system\": \"" << system_rows[i].first
-             << "\", \"mean_ms\": " << system_rows[i].second.mean_ms << ", \"p95_ms\": "
-             << system_rows[i].second.p95_ms << ", \"share_percent\": " << share << " }"
-             << (i + 1 < system_rows.size() ? "," : "") << "\n";
+             << "\", \"mean_ms\": " << system_rows[i].second.mean_ms
+             << ", \"p95_ms\": " << system_rows[i].second.p95_ms << ", \"share_percent\": " << share
+             << " }" << (i + 1 < system_rows.size() ? "," : "") << "\n";
     }
     json << "  ],\n";
     json << "  \"tick_total_ms_5000_sap\": " << big_stats.mean_ms << ",\n";
@@ -398,8 +498,8 @@ int main(int argc, char** argv) {
     json << "  \"scenario_b\": {\n";
     json << "    \"bodies\": 5000,\n";
     json << "    \"raycasts\": " << ray_queries << ",\n";
-    json << "    \"raycasts_per_sec\": "
-         << (ray_ms > 1.0e-9 ? ray_queries * 1000.0 / ray_ms : 0.0) << ",\n";
+    json << "    \"raycasts_per_sec\": " << (ray_ms > 1.0e-9 ? ray_queries * 1000.0 / ray_ms : 0.0)
+         << ",\n";
     json << "    \"raycast_hit_rate\": "
          << (ray_queries > 0 ? static_cast<double>(ray_hits) / ray_queries : 0.0) << ",\n";
     json << "    \"sweeps\": " << ray_queries << ",\n";

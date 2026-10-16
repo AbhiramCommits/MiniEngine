@@ -39,7 +39,7 @@ struct RigidBody {
 
     float inverse_mass() const {
         if (is_static || mass <= 0.0f) {
-            return 0.0f;  // infinite mass
+            return 0.0f; // infinite mass
         }
         return 1.0f / mass;
     }
@@ -184,4 +184,4 @@ private:
     ComponentArray<Tag> tags_;
 };
 
-}  // namespace minieng
+} // namespace minieng

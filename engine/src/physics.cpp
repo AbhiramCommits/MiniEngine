@@ -63,7 +63,7 @@ bool ray_sphere(const Vec3& o, const Vec3& d, float max_t, const Vec3& center, f
     const float b = oc.dot(d);
     const float c = oc.length_squared() - radius * radius;
     if (c > 0.0f && b > 0.0f) {
-        return false;  // outside, pointing away
+        return false; // outside, pointing away
     }
     const float disc = b * b - c;
     if (disc < 0.0f) {
@@ -72,7 +72,7 @@ bool ray_sphere(const Vec3& o, const Vec3& d, float max_t, const Vec3& center, f
     const float sq = std::sqrt(disc);
     float t = -b - sq;
     if (t < 0.0f) {
-        t = -b + sq;  // origin inside
+        t = -b + sq; // origin inside
     }
     if (t < 0.0f || t > max_t) {
         return false;
@@ -126,8 +126,8 @@ bool ray_obb(const Vec3& o, const Vec3& d, float max_t, const Obb& box, float& o
     }
     t = tmin;
 
-    Vec3 world_normal = box.axis[0] * local_normal.x + box.axis[1] * local_normal.y +
-                        box.axis[2] * local_normal.z;
+    Vec3 world_normal =
+        box.axis[0] * local_normal.x + box.axis[1] * local_normal.y + box.axis[2] * local_normal.z;
     out_t = t;
     out_normal = world_normal.normalized();
     return true;
@@ -152,7 +152,7 @@ float angular_term(const Vec3& r, const Vec3& n, float inv_inertia) {
     return n.dot((rxn * inv_inertia).cross(r));
 }
 
-}  // namespace
+} // namespace
 
 // ---------------------------------------------------------------------------
 // Aabb
@@ -216,9 +216,8 @@ std::vector<Pair> broadphase_sweep_and_prune(const std::vector<BroadphaseBody>& 
             }
         }
     }
-    std::sort(pairs.begin(), pairs.end(), [](const Pair& x, const Pair& y) {
-        return x.a < y.a || (x.a == y.a && x.b < y.b);
-    });
+    std::sort(pairs.begin(), pairs.end(),
+              [](const Pair& x, const Pair& y) { return x.a < y.a || (x.a == y.a && x.b < y.b); });
     return pairs;
 }
 
@@ -230,9 +229,8 @@ std::vector<Pair> broadphase_brute_force(const std::vector<BroadphaseBody>& bodi
             live.push_back(b);
         }
     }
-    std::sort(live.begin(), live.end(), [](const BroadphaseBody& x, const BroadphaseBody& y) {
-        return x.id < y.id;
-    });
+    std::sort(live.begin(), live.end(),
+              [](const BroadphaseBody& x, const BroadphaseBody& y) { return x.id < y.id; });
 
     std::vector<Pair> pairs;
     for (std::size_t i = 0; i < live.size(); ++i) {
@@ -242,9 +240,8 @@ std::vector<Pair> broadphase_brute_force(const std::vector<BroadphaseBody>& bodi
             }
         }
     }
-    std::sort(pairs.begin(), pairs.end(), [](const Pair& x, const Pair& y) {
-        return x.a < y.a || (x.a == y.a && x.b < y.b);
-    });
+    std::sort(pairs.begin(), pairs.end(),
+              [](const Pair& x, const Pair& y) { return x.a < y.a || (x.a == y.a && x.b < y.b); });
     return pairs;
 }
 
@@ -317,7 +314,7 @@ bool obb_obb(const Obb& a, const Obb& b, Vec3& out_normal, float& out_penetratio
     for (const Vec3& raw_axis : axes) {
         const float len = raw_axis.length();
         if (len < 1.0e-6f) {
-            continue;  // parallel edges: degenerate cross product
+            continue; // parallel edges: degenerate cross product
         }
         const Vec3 n = raw_axis / len;
 
@@ -331,7 +328,7 @@ bool obb_obb(const Obb& a, const Obb& b, Vec3& out_normal, float& out_penetratio
         const float dist = std::fabs(d.dot(n));
         const float penetration = ra + rb - dist;
         if (penetration < 0.0f) {
-            return false;  // separating axis found
+            return false; // separating axis found
         }
         if (penetration < min_penetration) {
             min_penetration = penetration;
@@ -370,7 +367,7 @@ bool sphere_obb(const Vec3& center, float radius, const Obb& box, Vec3& out_norm
 
     if (dist_sq > kAxisEps * kAxisEps) {
         const float dist = std::sqrt(dist_sq);
-        out_normal = diff / dist;  // box -> sphere
+        out_normal = diff / dist; // box -> sphere
         out_penetration = radius - dist;
         return true;
     }
@@ -456,8 +453,7 @@ void PhysicsWorld::build_broadphase() {
 }
 
 std::vector<Pair> PhysicsWorld::broadphase_pairs() const {
-    return config_.use_sap ? broadphase_sweep_and_prune(bodies_)
-                           : broadphase_brute_force(bodies_);
+    return config_.use_sap ? broadphase_sweep_and_prune(bodies_) : broadphase_brute_force(bodies_);
 }
 
 std::vector<Contact> PhysicsWorld::narrowphase(const std::vector<Pair>& pairs) const {
@@ -534,7 +530,7 @@ void PhysicsWorld::resolve_contacts(const std::vector<Contact>& contacts, float 
         const float inv_mb = inverse_mass(contact.b);
         const float inv_sum = inv_ma + inv_mb;
         if (inv_sum <= 0.0f) {
-            continue;  // static vs static
+            continue; // static vs static
         }
 
         const float inv_ia = inverse_inertia(contact.a);
@@ -542,10 +538,10 @@ void PhysicsWorld::resolve_contacts(const std::vector<Contact>& contacts, float 
 
         TransformRef* ref_a = world_.get_transform_ref(contact.a);
         TransformRef* ref_b = world_.get_transform_ref(contact.b);
-        Transform* ta = (ref_a && ref_a->scene_node >= 0) ? &scene_.local_of(ref_a->scene_node)
-                                                         : nullptr;
-        Transform* tb = (ref_b && ref_b->scene_node >= 0) ? &scene_.local_of(ref_b->scene_node)
-                                                         : nullptr;
+        Transform* ta =
+            (ref_a && ref_a->scene_node >= 0) ? &scene_.local_of(ref_a->scene_node) : nullptr;
+        Transform* tb =
+            (ref_b && ref_b->scene_node >= 0) ? &scene_.local_of(ref_b->scene_node) : nullptr;
 
         const Vec3& n = contact.normal;
         const Vec3 point = contact.point;
@@ -565,8 +561,7 @@ void PhysicsWorld::resolve_contacts(const std::vector<Contact>& contacts, float 
         const Vec3 pa = ta ? ta->position : position_of(contact.a);
         const Vec3 pb = tb ? tb->position : position_of(contact.b);
 
-        const float restitution =
-            std::max(body_a->restitution, body_b->restitution);
+        const float restitution = std::max(body_a->restitution, body_b->restitution);
 
         const int iterations = std::max(1, config_.solver_iterations);
         for (int iter = 0; iter < iterations; ++iter) {
@@ -579,14 +574,13 @@ void PhysicsWorld::resolve_contacts(const std::vector<Contact>& contacts, float 
 
             const float vn = vrel.dot(n);
             if (vn >= 0.0f) {
-                break;  // separating
+                break; // separating
             }
 
             // No restitution for slow closing speeds, to avoid resting jitter.
             const float e = (iter == 0 && -vn > config_.restitution_slop) ? restitution : 0.0f;
 
-            const float denom = inv_sum + angular_term(ra, n, inv_ia) +
-                                angular_term(rb, n, inv_ib);
+            const float denom = inv_sum + angular_term(ra, n, inv_ia) + angular_term(rb, n, inv_ib);
             if (denom <= 0.0f) {
                 break;
             }
@@ -609,8 +603,8 @@ void PhysicsWorld::resolve_contacts(const std::vector<Contact>& contacts, float 
             const float tangent_len = tangential.length();
             if (tangent_len > 1.0e-5f) {
                 const Vec3 t = tangential / tangent_len;
-                const float denom_t = inv_sum + angular_term(ra, t, inv_ia) +
-                                      angular_term(rb, t, inv_ib);
+                const float denom_t =
+                    inv_sum + angular_term(ra, t, inv_ia) + angular_term(rb, t, inv_ib);
                 if (denom_t > 0.0f) {
                     float jt = -vrel2.dot(t) / denom_t;
                     const float mu = std::sqrt(std::max(0.0f, body_a->friction) *
@@ -703,7 +697,7 @@ Obb PhysicsWorld::world_obb(EntityId id) const {
 
     const TransformRef* ref = world_.get_transform_ref(id);
     if (collider->shape == Collider::AABB || ref == nullptr || ref->scene_node < 0) {
-        return obb;  // identity axes
+        return obb; // identity axes
     }
 
     const Mat4& world = scene_.world_of(ref->scene_node);
@@ -776,9 +770,7 @@ RayHit PhysicsWorld::raycast_entity(EntityId id, const Vec3& origin, const Vec3&
             hit = ray_aabb(origin, dir, max_t, box.min, box.max, t, normal);
             break;
         }
-        case Collider::OBB:
-            hit = ray_obb(origin, dir, max_t, world_obb(id), t, normal);
-            break;
+        case Collider::OBB: hit = ray_obb(origin, dir, max_t, world_obb(id), t, normal); break;
     }
 
     if (hit) {
@@ -859,10 +851,10 @@ SweepHit PhysicsWorld::sweep_aabb(const Aabb& box, const Vec3& from, const Vec3&
     for (const BroadphaseBody& body : bodies_) {
         // Broadphase reject: the swept AABB of the moving box.
         Aabb swept;
-        swept.min = Vec3(std::min(from.x, to.x), std::min(from.y, to.y), std::min(from.z, to.z)) -
-                    half;
-        swept.max = Vec3(std::max(from.x, to.x), std::max(from.y, to.y), std::max(from.z, to.z)) +
-                    half;
+        swept.min =
+            Vec3(std::min(from.x, to.x), std::min(from.y, to.y), std::min(from.z, to.z)) - half;
+        swept.max =
+            Vec3(std::max(from.x, to.x), std::max(from.y, to.y), std::max(from.z, to.z)) + half;
         if (!swept.overlaps(body.aabb)) {
             continue;
         }
@@ -904,4 +896,4 @@ std::vector<EntityId> PhysicsWorld::overlap_sphere(const Vec3& center, float rad
     return result;
 }
 
-}  // namespace minieng
+} // namespace minieng

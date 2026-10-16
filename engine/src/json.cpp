@@ -23,7 +23,7 @@ void append_utf8(std::string& out, unsigned int codepoint) {
     }
 }
 
-}  // namespace
+} // namespace
 
 class JsonParser {
 public:
@@ -307,9 +307,13 @@ double Json::as_number(double fallback) const {
     return fallback;
 }
 
-float Json::as_float(float fallback) const { return static_cast<float>(as_number(fallback)); }
+float Json::as_float(float fallback) const {
+    return static_cast<float>(as_number(fallback));
+}
 
-int Json::as_int(int fallback) const { return static_cast<int>(as_number(fallback)); }
+int Json::as_int(int fallback) const {
+    return static_cast<int>(as_number(fallback));
+}
 
 const std::string& Json::as_string() const {
     if (type_ == Type::String) {
@@ -358,4 +362,4 @@ std::size_t Json::size() const {
     return 0;
 }
 
-}  // namespace minieng
+} // namespace minieng

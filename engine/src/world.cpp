@@ -30,7 +30,7 @@ inline std::int64_t quantize(float v) {
     return static_cast<std::int64_t>(std::llround(static_cast<double>(v) * 10000.0));
 }
 
-}  // namespace
+} // namespace
 
 // ---------------------------------------------------------------------------
 // World lifecycle
@@ -80,7 +80,9 @@ void World::erase_components_at(int idx) {
     erase(tags_);
 }
 
-bool World::alive(EntityId id) const { return index_of(id) >= 0; }
+bool World::alive(EntityId id) const {
+    return index_of(id) >= 0;
+}
 
 int World::index_of(EntityId id) const {
     const auto it = id_to_index_.find(id);
@@ -107,22 +109,34 @@ TransformRef& World::add_transform_ref(EntityId id, int scene_node) {
     return add(transform_refs_, id, ref);
 }
 
-TransformRef* World::get_transform_ref(EntityId id) { return get(transform_refs_, id); }
-const TransformRef* World::get_transform_ref(EntityId id) const { return get(transform_refs_, id); }
+TransformRef* World::get_transform_ref(EntityId id) {
+    return get(transform_refs_, id);
+}
+const TransformRef* World::get_transform_ref(EntityId id) const {
+    return get(transform_refs_, id);
+}
 
 RigidBody& World::add_rigid_body(EntityId id, const RigidBody& body) {
     return add(rigid_bodies_, id, body);
 }
 
-RigidBody* World::get_rigid_body(EntityId id) { return get(rigid_bodies_, id); }
-const RigidBody* World::get_rigid_body(EntityId id) const { return get(rigid_bodies_, id); }
+RigidBody* World::get_rigid_body(EntityId id) {
+    return get(rigid_bodies_, id);
+}
+const RigidBody* World::get_rigid_body(EntityId id) const {
+    return get(rigid_bodies_, id);
+}
 
 Collider& World::add_collider(EntityId id, const Collider& collider) {
     return add(colliders_, id, collider);
 }
 
-Collider* World::get_collider(EntityId id) { return get(colliders_, id); }
-const Collider* World::get_collider(EntityId id) const { return get(colliders_, id); }
+Collider* World::get_collider(EntityId id) {
+    return get(colliders_, id);
+}
+const Collider* World::get_collider(EntityId id) const {
+    return get(colliders_, id);
+}
 
 Tag& World::add_tag(EntityId id, const std::string& name) {
     Tag t;
@@ -130,8 +144,12 @@ Tag& World::add_tag(EntityId id, const std::string& name) {
     return add(tags_, id, t);
 }
 
-Tag* World::get_tag(EntityId id) { return get(tags_, id); }
-const Tag* World::get_tag(EntityId id) const { return get(tags_, id); }
+Tag* World::get_tag(EntityId id) {
+    return get(tags_, id);
+}
+const Tag* World::get_tag(EntityId id) const {
+    return get(tags_, id);
+}
 
 // ---------------------------------------------------------------------------
 // Queries
@@ -203,4 +221,4 @@ std::uint64_t WorldSnapshot::hash() const {
     return h;
 }
 
-}  // namespace minieng
+} // namespace minieng

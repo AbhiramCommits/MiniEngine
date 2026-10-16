@@ -81,4 +81,4 @@ bool Replay::same_as(const Replay& other, bool compare_hashes) const {
     return true;
 }
 
-}  // namespace minieng
+} // namespace minieng

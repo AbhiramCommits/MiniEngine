@@ -81,9 +81,9 @@ private:
     const char* name_;
 };
 
-}  // namespace minieng
+} // namespace minieng
 
 #define MINIENG_PROFILE_CONCAT_INNER(a, b) a##b
 #define MINIENG_PROFILE_CONCAT(a, b) MINIENG_PROFILE_CONCAT_INNER(a, b)
-#define MINIENG_PROFILE(name)                                                      \
+#define MINIENG_PROFILE(name) \
     ::minieng::ProfileScope MINIENG_PROFILE_CONCAT(minieng_profile_scope_, __LINE__)((name))

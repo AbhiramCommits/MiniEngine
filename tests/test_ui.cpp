@@ -31,9 +31,7 @@ struct UiFixture {
     BindingTable table;
     EntityId selected = kInvalidEntity;
 
-    UiFixture() {
-        register_simulation_bindings(table, world, scene, config, selected, control);
-    }
+    UiFixture() { register_simulation_bindings(table, world, scene, config, selected, control); }
 
     EntityId spawn(const Vec3& pos, float restitution = 0.4f) {
         const EntityId id = world.create_entity();
@@ -55,7 +53,7 @@ struct UiFixture {
     }
 };
 
-}  // namespace
+} // namespace
 
 // ---------------------------------------------------------------------------
 // Layout
@@ -135,7 +133,7 @@ TEST(UiLayout, EditingTheJsonChangesTheTreeWithNoCodeChange) {
 
     extended.compute_layout(1280.0f, 720.0f);
     const Widget* debug = extended.find("debug");
-    EXPECT_FLOAT_EQ(debug->rect.y, 430.0f);  // anchor offset 420 + root padding 10
+    EXPECT_FLOAT_EQ(debug->rect.y, 430.0f); // anchor offset 420 + root padding 10
     EXPECT_FLOAT_EQ(debug->rect.h, 150.0f);
 }
 

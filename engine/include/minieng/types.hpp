@@ -11,4 +11,4 @@ using EntityId = std::uint32_t;
 
 constexpr EntityId kInvalidEntity = 0u;
 
-}  // namespace minieng
+} // namespace minieng

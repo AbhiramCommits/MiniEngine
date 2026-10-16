@@ -29,14 +29,20 @@ constexpr float kEpsilonSq = kEpsilon * kEpsilon;
 constexpr float kDegToRad = kPi / 180.0f;
 constexpr float kRadToDeg = 180.0f / kPi;
 
-constexpr inline float deg_to_rad(float d) { return d * kDegToRad; }
-constexpr inline float rad_to_deg(float r) { return r * kRadToDeg; }
+constexpr inline float deg_to_rad(float d) {
+    return d * kDegToRad;
+}
+constexpr inline float rad_to_deg(float r) {
+    return r * kRadToDeg;
+}
 
 inline float clampf(float v, float lo, float hi) {
     return v < lo ? lo : (v > hi ? hi : v);
 }
 
-inline float lerpf(float a, float b, float t) { return a + (b - a) * t; }
+inline float lerpf(float a, float b, float t) {
+    return a + (b - a) * t;
+}
 
 inline bool approx_equal(float a, float b, float eps = kEpsilon) {
     return std::fabs(a - b) <= eps;
@@ -67,9 +73,24 @@ struct Vec3 {
     Vec3 operator*(float s) const { return Vec3(x * s, y * s, z * s); }
     Vec3 operator/(float s) const { return Vec3(x / s, y / s, z / s); }
 
-    Vec3& operator+=(const Vec3& o) { x += o.x; y += o.y; z += o.z; return *this; }
-    Vec3& operator-=(const Vec3& o) { x -= o.x; y -= o.y; z -= o.z; return *this; }
-    Vec3& operator*=(float s) { x *= s; y *= s; z *= s; return *this; }
+    Vec3& operator+=(const Vec3& o) {
+        x += o.x;
+        y += o.y;
+        z += o.z;
+        return *this;
+    }
+    Vec3& operator-=(const Vec3& o) {
+        x -= o.x;
+        y -= o.y;
+        z -= o.z;
+        return *this;
+    }
+    Vec3& operator*=(float s) {
+        x *= s;
+        y *= s;
+        z *= s;
+        return *this;
+    }
 
     float dot(const Vec3& o) const { return x * o.x + y * o.y + z * o.z; }
     Vec3 cross(const Vec3& o) const {
@@ -88,12 +109,13 @@ struct Vec3 {
     float& operator[](int i) { return i == 0 ? x : (i == 1 ? y : z); }
 
     bool approx_equal_to(const Vec3& o, float eps = kEpsilon) const {
-        return std::fabs(x - o.x) <= eps && std::fabs(y - o.y) <= eps &&
-               std::fabs(z - o.z) <= eps;
+        return std::fabs(x - o.x) <= eps && std::fabs(y - o.y) <= eps && std::fabs(z - o.z) <= eps;
     }
 };
 
-inline Vec3 operator*(float s, const Vec3& v) { return v * s; }
+inline Vec3 operator*(float s, const Vec3& v) {
+    return v * s;
+}
 
 // ---------------------------------------------------------------------------
 // Quat
@@ -121,12 +143,8 @@ struct Quat {
 
     Quat operator*(const Quat& o) const { return multiply(o); }
 
-    Quat operator+(const Quat& o) const {
-        return Quat(w + o.w, x + o.x, y + o.y, z + o.z);
-    }
-    Quat operator-(const Quat& o) const {
-        return Quat(w - o.w, x - o.x, y - o.y, z - o.z);
-    }
+    Quat operator+(const Quat& o) const { return Quat(w + o.w, x + o.x, y + o.y, z + o.z); }
+    Quat operator-(const Quat& o) const { return Quat(w - o.w, x - o.x, y - o.y, z - o.z); }
     Quat operator*(float s) const { return Quat(w * s, x * s, y * s, z * s); }
 
     Vec3 vector_part() const { return Vec3(x, y, z); }
@@ -145,8 +163,8 @@ struct Quat {
 
     bool approx_equal_to(const Quat& o, float eps = kEpsilon) const {
         // q and -q represent the same rotation.
-        if (std::fabs(w - o.w) <= eps && std::fabs(x - o.x) <= eps &&
-            std::fabs(y - o.y) <= eps && std::fabs(z - o.z) <= eps) {
+        if (std::fabs(w - o.w) <= eps && std::fabs(x - o.x) <= eps && std::fabs(y - o.y) <= eps &&
+            std::fabs(z - o.z) <= eps) {
             return true;
         }
         return std::fabs(w + o.w) <= eps && std::fabs(x + o.x) <= eps &&
@@ -158,7 +176,9 @@ struct Quat {
 // fall back to a normalized component-wise lerp to avoid a divide-by-zero.
 Quat slerp(const Quat& a, const Quat& b, float t);
 
-inline Quat operator*(float s, const Quat& q) { return q * s; }
+inline Quat operator*(float s, const Quat& q) {
+    return q * s;
+}
 
 // ---------------------------------------------------------------------------
 // Mat4
@@ -166,10 +186,8 @@ inline Quat operator*(float s, const Quat& q) { return q * s; }
 
 struct Mat4 {
     // Row-major: m[row * 4 + col].
-    float m[16] = {1.0f, 0.0f, 0.0f, 0.0f,
-                   0.0f, 1.0f, 0.0f, 0.0f,
-                   0.0f, 0.0f, 1.0f, 0.0f,
-                   0.0f, 0.0f, 0.0f, 1.0f};
+    float m[16] = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                   0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
 
     Mat4() = default;
 
@@ -204,4 +222,4 @@ struct Mat4 {
     Mat4 transposed() const;
 };
 
-}  // namespace minieng
+} // namespace minieng

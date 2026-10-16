@@ -4,9 +4,11 @@ namespace minieng {
 
 namespace {
 constexpr std::uint64_t kSeedScramble = 0x2545F4914F6CDD1Dull;
-}  // namespace
+} // namespace
 
-Rng::Rng(std::uint64_t seed) { reseed(seed); }
+Rng::Rng(std::uint64_t seed) {
+    reseed(seed);
+}
 
 void Rng::reseed(std::uint64_t seed) {
     state_ = seed ? seed : kSeedScramble;
@@ -39,7 +41,9 @@ float Rng::next_float() {
     return static_cast<float>(next_u32() >> 8) * (1.0f / 16777216.0f);
 }
 
-float Rng::range(float lo, float hi) { return lo + (hi - lo) * next_float(); }
+float Rng::range(float lo, float hi) {
+    return lo + (hi - lo) * next_float();
+}
 
 int Rng::range_int(int lo, int hi) {
     if (hi <= lo) {
@@ -49,4 +53,4 @@ int Rng::range_int(int lo, int hi) {
     return lo + static_cast<int>(next_u32() % span);
 }
 
-}  // namespace minieng
+} // namespace minieng

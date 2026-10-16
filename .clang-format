@@ -1,0 +1,51 @@
+# MiniEngine house style.
+#
+#   clang-format -i $(git ls-files '*.hpp' '*.cpp')
+#
+# Google's base with a 100 column limit and 4-space indents (the style the
+# sources were written in).
+---
+Language: Cpp
+BasedOnStyle: Google
+
+Standard: c++17
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+
+AccessModifierOffset: -4
+IndentAccessModifiers: false
+NamespaceIndentation: None
+
+# Braces attach to the preceding line, matching the existing sources.
+BreakBeforeBraces: Attach
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: true
+
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignTrailingComments: true
+AlignOperands: AlignAfterOperator
+
+PointerAlignment: Left
+DerivePointerAlignment: false
+
+SpaceBeforeParens: ControlStatements
+SpacesBeforeTrailingComments: 1
+BinPackArguments: true
+BinPackParameters: true
+
+SortIncludes: CaseSensitive
+IncludeBlocks: Preserve
+
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+MaxEmptyLinesToKeep: 1
+
+FixNamespaceComments: true
+ReflowComments: true

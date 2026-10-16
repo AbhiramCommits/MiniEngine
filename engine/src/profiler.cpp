@@ -15,7 +15,7 @@ double now_ms() {
     return std::chrono::duration<double, std::milli>(clock::now().time_since_epoch()).count();
 }
 
-}  // namespace
+} // namespace
 
 FrameStats compute_stats(const std::vector<double>& samples_ms) {
     FrameStats stats;
@@ -84,8 +84,8 @@ void Profiler::end_frame() {
             s.samples.push_back(s.frame_total);
             if (s.samples.size() > max_samples_) {
                 s.samples.erase(s.samples.begin(),
-                                s.samples.begin() + static_cast<std::ptrdiff_t>(s.samples.size() -
-                                                                                max_samples_));
+                                s.samples.begin() +
+                                    static_cast<std::ptrdiff_t>(s.samples.size() - max_samples_));
             }
         }
     }
@@ -122,8 +122,9 @@ void Profiler::add_sample(const char* name, double ms) {
     Series& s = series(name);
     s.samples.push_back(ms);
     if (s.samples.size() > max_samples_) {
-        s.samples.erase(s.samples.begin(), s.samples.begin() + static_cast<std::ptrdiff_t>(
-                                                              s.samples.size() - max_samples_));
+        s.samples.erase(
+            s.samples.begin(),
+            s.samples.begin() + static_cast<std::ptrdiff_t>(s.samples.size() - max_samples_));
     }
 }
 
@@ -136,7 +137,9 @@ FrameStats Profiler::stats(const std::string& name) const {
     return FrameStats{};
 }
 
-FrameStats Profiler::frame_stats() const { return stats("frame"); }
+FrameStats Profiler::frame_stats() const {
+    return stats("frame");
+}
 
 std::vector<std::string> Profiler::names() const {
     std::vector<std::string> out;
@@ -182,6 +185,8 @@ ProfileScope::ProfileScope(const char* name) : name_(name) {
     Profiler::global().begin_sample(name_);
 }
 
-ProfileScope::~ProfileScope() { Profiler::global().end_sample(name_); }
+ProfileScope::~ProfileScope() {
+    Profiler::global().end_sample(name_);
+}
 
-}  // namespace minieng
+} // namespace minieng

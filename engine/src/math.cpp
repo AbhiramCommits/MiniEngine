@@ -38,10 +38,8 @@ Quat Quat::from_euler(float rx, float ry, float rz) {
 }
 
 Quat Quat::multiply(const Quat& o) const {
-    return Quat(w * o.w - x * o.x - y * o.y - z * o.z,
-                w * o.x + x * o.w + y * o.z - z * o.y,
-                w * o.y - x * o.z + y * o.w + z * o.x,
-                w * o.z + x * o.y - y * o.x + z * o.w);
+    return Quat(w * o.w - x * o.x - y * o.y - z * o.z, w * o.x + x * o.w + y * o.z - z * o.y,
+                w * o.y - x * o.z + y * o.w + z * o.x, w * o.z + x * o.y - y * o.x + z * o.w);
 }
 
 Quat Quat::normalize(float eps) const {
@@ -88,7 +86,9 @@ Quat slerp(const Quat& a, const Quat& b, float t) {
 // Mat4
 // ---------------------------------------------------------------------------
 
-Mat4 Mat4::identity() { return Mat4(); }
+Mat4 Mat4::identity() {
+    return Mat4();
+}
 
 Mat4 Mat4::from_translation(const Vec3& t) {
     Mat4 r;
@@ -155,18 +155,27 @@ void Mat4::decompose(const Mat4& mat, Vec3& out_t, Quat& out_r, Vec3& out_s) {
 
     out_s = Vec3(sx, sy, sz);
 
-    if (std::fabs(sx) > kEpsilon) c0 = c0 / sx;
-    if (std::fabs(sy) > kEpsilon) c1 = c1 / sy;
-    if (std::fabs(sz) > kEpsilon) c2 = c2 / sz;
+    if (std::fabs(sx) > kEpsilon)
+        c0 = c0 / sx;
+    if (std::fabs(sy) > kEpsilon)
+        c1 = c1 / sy;
+    if (std::fabs(sz) > kEpsilon)
+        c2 = c2 / sz;
 
     Mat4 rot;
-    rot.at(0, 0) = c0.x; rot.at(1, 0) = c0.y; rot.at(2, 0) = c0.z;
-    rot.at(0, 1) = c1.x; rot.at(1, 1) = c1.y; rot.at(2, 1) = c1.z;
-    rot.at(0, 2) = c2.x; rot.at(1, 2) = c2.y; rot.at(2, 2) = c2.z;
+    rot.at(0, 0) = c0.x;
+    rot.at(1, 0) = c0.y;
+    rot.at(2, 0) = c0.z;
+    rot.at(0, 1) = c1.x;
+    rot.at(1, 1) = c1.y;
+    rot.at(2, 1) = c1.z;
+    rot.at(0, 2) = c2.x;
+    rot.at(1, 2) = c2.y;
+    rot.at(2, 2) = c2.z;
 
     const float trace = rot.at(0, 0) + rot.at(1, 1) + rot.at(2, 2);
     if (trace > 0.0f) {
-        const float s = std::sqrt(trace + 1.0f) * 2.0f;  // s = 4w
+        const float s = std::sqrt(trace + 1.0f) * 2.0f; // s = 4w
         out_r.w = 0.25f * s;
         out_r.x = (rot.at(2, 1) - rot.at(1, 2)) / s;
         out_r.y = (rot.at(0, 2) - rot.at(2, 0)) / s;
@@ -242,11 +251,17 @@ Mat4 Mat4::look_at(const Vec3& eye, const Vec3& target, const Vec3& up) {
     const Vec3 true_up = right.cross(forward);
 
     Mat4 r;
-    r.at(0, 0) = right.x;    r.at(0, 1) = right.y;    r.at(0, 2) = right.z;
+    r.at(0, 0) = right.x;
+    r.at(0, 1) = right.y;
+    r.at(0, 2) = right.z;
     r.at(0, 3) = -right.dot(eye);
-    r.at(1, 0) = true_up.x;  r.at(1, 1) = true_up.y;  r.at(1, 2) = true_up.z;
+    r.at(1, 0) = true_up.x;
+    r.at(1, 1) = true_up.y;
+    r.at(1, 2) = true_up.z;
     r.at(1, 3) = -true_up.dot(eye);
-    r.at(2, 0) = -forward.x; r.at(2, 1) = -forward.y; r.at(2, 2) = -forward.z;
+    r.at(2, 0) = -forward.x;
+    r.at(2, 1) = -forward.y;
+    r.at(2, 2) = -forward.z;
     r.at(2, 3) = forward.dot(eye);
     return r;
 }
@@ -266,8 +281,7 @@ Mat4 Mat4::inverse_affine() const {
     const float a10 = at(1, 0), a11 = at(1, 1), a12 = at(1, 2);
     const float a20 = at(2, 0), a21 = at(2, 1), a22 = at(2, 2);
 
-    const float det = a00 * (a11 * a22 - a12 * a21) -
-                      a01 * (a10 * a22 - a12 * a20) +
+    const float det = a00 * (a11 * a22 - a12 * a21) - a01 * (a10 * a22 - a12 * a20) +
                       a02 * (a10 * a21 - a11 * a20);
 
     Mat4 r;
@@ -294,4 +308,4 @@ Mat4 Mat4::inverse_affine() const {
     return r;
 }
 
-}  // namespace minieng
+} // namespace minieng

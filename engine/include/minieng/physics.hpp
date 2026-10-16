@@ -37,8 +37,8 @@ struct Aabb {
 
     // Inclusive overlap on all three axes.
     bool overlaps(const Aabb& o) const {
-        return min.x <= o.max.x && o.min.x <= max.x && min.y <= o.max.y &&
-               o.min.y <= max.y && min.z <= o.max.z && o.min.z <= max.z;
+        return min.x <= o.max.x && o.min.x <= max.x && min.y <= o.max.y && o.min.y <= max.y &&
+               min.z <= o.max.z && o.min.z <= max.z;
     }
 };
 
@@ -66,15 +66,15 @@ struct Pair {
 struct Contact {
     EntityId a = kInvalidEntity;
     EntityId b = kInvalidEntity;
-    Vec3 normal;               // points from a to b
+    Vec3 normal; // points from a to b
     float penetration = 0.0f;
-    Vec3 point;                // approximate contact point (world)
+    Vec3 point; // approximate contact point (world)
 };
 
 struct RayHit {
     bool hit = false;
     EntityId entity = kInvalidEntity;
-    float t = 0.0f;            // world distance along the (normalized) direction
+    float t = 0.0f; // world distance along the (normalized) direction
     Vec3 point;
     Vec3 normal;
 };
@@ -82,7 +82,7 @@ struct RayHit {
 struct SweepHit {
     bool hit = false;
     EntityId entity = kInvalidEntity;
-    float t = 0.0f;            // fraction in [0, 1] of the from -> to motion
+    float t = 0.0f; // fraction in [0, 1] of the from -> to motion
     Vec3 point;
     Vec3 normal;
 };
@@ -115,7 +115,7 @@ struct PhysicsConfig {
     float angular_damping = 0.05f;
 
     // Resolution.
-    float restitution_slop = 1.0f;   // below this closing speed, no bounce
+    float restitution_slop = 1.0f; // below this closing speed, no bounce
     float penetration_slop = 1.0e-3f;
     float baumgarte = 0.8f;
     int solver_iterations = 4;
@@ -203,4 +203,4 @@ private:
 SweepHit sweep_aabb_vs_aabb(const Vec3& half, const Vec3& from, const Vec3& to,
                             const Aabb& obstacle, EntityId id);
 
-}  // namespace minieng
+} // namespace minieng

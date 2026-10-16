@@ -68,13 +68,14 @@ Sim make_sim(std::uint64_t seed, int bodies) {
 
         Transform t;
         t.position = Vec3(rng.range(-5.0f, 5.0f), rng.range(1.0f, 10.0f), rng.range(-5.0f, 5.0f));
-        t.rotation = Quat::from_axis_angle(Vec3(rng.range(-1.0f, 1.0f), rng.range(-1.0f, 1.0f),
-                                                rng.range(-1.0f, 1.0f)),
-                                           rng.range(0.0f, kTwoPi));
+        t.rotation = Quat::from_axis_angle(
+            Vec3(rng.range(-1.0f, 1.0f), rng.range(-1.0f, 1.0f), rng.range(-1.0f, 1.0f)),
+            rng.range(0.0f, kTwoPi));
         sim.scene.set_local(node, t);
 
         RigidBody body;
-        body.velocity = Vec3(rng.range(-1.0f, 1.0f), rng.range(-1.0f, 1.0f), rng.range(-1.0f, 1.0f));
+        body.velocity =
+            Vec3(rng.range(-1.0f, 1.0f), rng.range(-1.0f, 1.0f), rng.range(-1.0f, 1.0f));
         body.mass = rng.range(0.5f, 4.0f);
         sim.world.add_rigid_body(id, body);
     }
@@ -82,7 +83,7 @@ Sim make_sim(std::uint64_t seed, int bodies) {
     return sim;
 }
 
-}  // namespace
+} // namespace
 
 TEST(FixedLoop, DefaultsAndAccessors) {
     FixedLoop loop;
@@ -144,12 +145,13 @@ TEST(FixedLoop, SystemsRunInStageOrder) {
     loop.set_system(SystemStage::Input, [&order](float) { order.push_back("input"); });
     loop.set_system(SystemStage::CollisionResolve, [&order](float) { order.push_back("resolve"); });
     loop.set_system(SystemStage::SceneTransform, [&order](float) { order.push_back("scene"); });
-    loop.set_system(SystemStage::PhysicsIntegrate, [&order](float) { order.push_back("integrate"); });
+    loop.set_system(SystemStage::PhysicsIntegrate,
+                    [&order](float) { order.push_back("integrate"); });
     loop.set_system(SystemStage::Spawn, [&order](float) { order.push_back("spawn"); });
 
     loop.step_once();
 
-    const std::vector<std::string> expected = {"input", "spawn", "integrate",
+    const std::vector<std::string> expected = {"input",   "spawn", "integrate",
                                                "resolve", "scene", "ui"};
     EXPECT_EQ(order, expected);
 

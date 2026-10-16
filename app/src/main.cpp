@@ -22,6 +22,7 @@
 #include "minieng/profiler.hpp"
 #include "minieng/rng.hpp"
 #include "minieng/scene.hpp"
+#include "minieng/scene_loader.hpp"
 #include "minieng/ui/bindings.hpp"
 #include "minieng/ui/layout.hpp"
 #include "minieng/ui/navigation.hpp"
@@ -57,9 +58,7 @@ struct Camera {
     }
 
     Mat4 view() const { return Mat4::look_at(eye, target, Vec3::unit_y()); }
-    Mat4 projection(float aspect) const {
-        return Mat4::perspective(fov_y, aspect, near_z, far_z);
-    }
+    Mat4 projection(float aspect) const { return Mat4::perspective(fov_y, aspect, near_z, far_z); }
 
     // Ray direction through a normalized device coordinate.
     Vec3 ray_direction(float ndc_x, float ndc_y, float aspect) const {
@@ -86,6 +85,7 @@ struct AppState {
 
     EntityId selected = kInvalidEntity;
     std::uint64_t seed = 1337u;
+    std::string scene_path; // empty == built-in demo scene
 
     float frame_ms = 0.0f;
     float queries_per_sec = 0.0f;
@@ -156,12 +156,7 @@ EntityId add_obb(AppState& app, const Vec3& position, const Vec3& half, const Qu
     return add_body(app, position, rotation, c, b);
 }
 
-void build_scene(AppState& app, std::uint64_t seed) {
-    app.world.clear();
-    app.scene.clear();
-    app.selected = kInvalidEntity;
-    app.seed = seed;
-
+void build_default_scene(AppState& app, std::uint64_t seed) {
     const PhysicsConfig& cfg = app.physics.config();
 
     // Ground.
@@ -181,14 +176,39 @@ void build_scene(AppState& app, std::uint64_t seed) {
 
     Rng rng(seed);
     for (int i = 0; i < 10; ++i) {
-        add_sphere(app, Vec3(rng.range(-6.0f, 6.0f), 3.0f + rng.range(0.0f, 7.0f),
-                             rng.range(-6.0f, 6.0f)),
-                   0.45f, 0.55f);
+        add_sphere(
+            app, Vec3(rng.range(-6.0f, 6.0f), 3.0f + rng.range(0.0f, 7.0f), rng.range(-6.0f, 6.0f)),
+            0.45f, 0.55f);
     }
     for (int i = 0; i < 8; ++i) {
-        add_dynamic_box(app, Vec3(rng.range(-7.0f, 7.0f), 4.0f + rng.range(0.0f, 8.0f),
-                                  rng.range(-7.0f, 7.0f)),
-                        Vec3(0.4f, 0.4f, 0.4f), 0.25f);
+        add_dynamic_box(
+            app, Vec3(rng.range(-7.0f, 7.0f), 4.0f + rng.range(0.0f, 8.0f), rng.range(-7.0f, 7.0f)),
+            Vec3(0.4f, 0.4f, 0.4f), 0.25f);
+    }
+}
+
+// Clears the world and rebuilds it, either from --scene or from the built-in
+// demo used when no scene file was given.
+void build_scene(AppState& app, std::uint64_t seed) {
+    app.world.clear();
+    app.scene.clear();
+    app.selected = kInvalidEntity;
+    app.seed = seed;
+
+    if (!app.scene_path.empty()) {
+        const SceneDescription desc = load_scene_from_file(app.scene_path, app.world, app.scene);
+        if (desc.ok) {
+            app.physics.config().gravity = desc.gravity;
+            app.camera.eye = desc.camera_eye;
+            app.camera.target = desc.camera_target;
+            app.camera.update_basis();
+            std::printf("scene: %s (%zu entities)\n", desc.name.c_str(), desc.entities.size());
+        } else {
+            std::fprintf(stderr, "could not load scene '%s': %s\n", app.scene_path.c_str(),
+                         desc.error.c_str());
+        }
+    } else {
+        build_default_scene(app, seed);
     }
 
     app.scene.update_world_transforms();
@@ -293,9 +313,12 @@ void draw_scene_lines(AppState& app, ImDrawList* draw, float width, float height
     }
 
     // World axes.
-    draw_line_3d(draw, view_proj, Vec3::zero(), Vec3(2, 0, 0), width, height, IM_COL32(220, 70, 70, 255));
-    draw_line_3d(draw, view_proj, Vec3::zero(), Vec3(0, 2, 0), width, height, IM_COL32(70, 220, 70, 255));
-    draw_line_3d(draw, view_proj, Vec3::zero(), Vec3(0, 0, 2), width, height, IM_COL32(70, 120, 240, 255));
+    draw_line_3d(draw, view_proj, Vec3::zero(), Vec3(2, 0, 0), width, height,
+                 IM_COL32(220, 70, 70, 255));
+    draw_line_3d(draw, view_proj, Vec3::zero(), Vec3(0, 2, 0), width, height,
+                 IM_COL32(70, 220, 70, 255));
+    draw_line_3d(draw, view_proj, Vec3::zero(), Vec3(0, 0, 2), width, height,
+                 IM_COL32(70, 120, 240, 255));
 
     for (const EntityId id : app.world.entities()) {
         const Collider* collider = app.world.get_collider(id);
@@ -331,10 +354,9 @@ void draw_widget(AppState& app, const Widget& widget) {
     if (widget.type == "panel") {
         ImGui::SetNextWindowPos(ImVec2(widget.rect.x, widget.rect.y), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(widget.rect.w, widget.rect.h), ImGuiCond_Always);
-        const ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                                       ImGuiWindowFlags_NoCollapse |
-                                       ImGuiWindowFlags_NoSavedSettings |
-                                       ImGuiWindowFlags_NoBringToFrontOnFocus;
+        const ImGuiWindowFlags flags =
+            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus;
         if (ImGui::Begin(widget.id.c_str(), nullptr, flags)) {
             for (const Widget& child : widget.children) {
                 draw_widget(app, child);
@@ -355,8 +377,8 @@ void draw_widget(AppState& app, const Widget& widget) {
     }
 
     if (widget.type == "label") {
-        const std::string value = widget.binding.empty() ? std::string()
-                                                         : app.bindings.get_string(widget.binding);
+        const std::string value =
+            widget.binding.empty() ? std::string() : app.bindings.get_string(widget.binding);
         if (value.empty()) {
             ImGui::TextUnformatted(widget.text.c_str());
         } else {
@@ -403,8 +425,8 @@ void handle_navigation_input(AppState& app) {
     const ImGuiIO& io = ImGui::GetIO();
     (void)io;
 
-    if (ImGui::IsKeyPressed(ImGuiKey_RightArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight) ||
-        ImGui::IsKeyPressed(ImGuiKey_D)) {
+    if (ImGui::IsKeyPressed(ImGuiKey_RightArrow) ||
+        ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight) || ImGui::IsKeyPressed(ImGuiKey_D)) {
         app.ui.move_focus(FocusDir::Right);
     }
     if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft) ||
@@ -504,10 +526,11 @@ void draw_stats_overlay(AppState& app) {
 
 struct Options {
     std::string ui_path = std::string(MINIENGINE_SOURCE_DIR) + "/data/ui/main.ui.json";
+    std::string scene_path; // empty == built-in demo scene
     std::uint64_t seed = 1337u;
     int width = 1280;
     int height = 720;
-    int max_frames = 0;  // 0 == run until the window is closed
+    int max_frames = 0; // 0 == run until the window is closed
 };
 
 Options parse_args(int argc, char** argv) {
@@ -521,6 +544,8 @@ Options parse_args(int argc, char** argv) {
         };
         if (arg == "--ui") {
             next(options.ui_path);
+        } else if (arg == "--scene") {
+            next(options.scene_path);
         } else if (arg == "--frames") {
             std::string value;
             next(value);
@@ -539,8 +564,8 @@ Options parse_args(int argc, char** argv) {
             options.height = std::atoi(value.c_str());
         } else if (arg == "--help" || arg == "-h") {
             std::printf(
-                "usage: minieng_sandbox [--ui PATH] [--seed N] [--frames N] [--width W] "
-                "[--height H]\n");
+                "usage: minieng_sandbox [--scene PATH] [--ui PATH] [--seed N] [--frames N] "
+                "[--width W] [--height H]\n");
             std::exit(0);
         }
     }
@@ -551,7 +576,7 @@ void glfw_error_callback(int error, const char* description) {
     std::fprintf(stderr, "GLFW error %d: %s\n", error, description);
 }
 
-}  // namespace
+} // namespace
 
 int main(int argc, char** argv) {
     const Options options = parse_args(argc, argv);
@@ -567,8 +592,8 @@ int main(int argc, char** argv) {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(options.width, options.height, "MiniEngine Sandbox",
-                                          nullptr, nullptr);
+    GLFWwindow* window =
+        glfwCreateWindow(options.width, options.height, "MiniEngine Sandbox", nullptr, nullptr);
     if (window == nullptr) {
         std::fprintf(stderr, "failed to create a window\n");
         glfwTerminate();
@@ -585,6 +610,7 @@ int main(int argc, char** argv) {
 
     AppState app;
     app.camera.update_basis();
+    app.scene_path = options.scene_path;
 
     std::string error;
     app.layout = Layout::load(options.ui_path, &error);

@@ -33,13 +33,12 @@ struct FuzzScene {
             const Vec3 position(rng.range(-9.0f, 9.0f), rng.range(0.2f, 9.0f),
                                 rng.range(-9.0f, 9.0f));
             const int kind = rng.range_int(0, 2);
-            const Quat rotation =
-                Quat::from_axis_angle(Vec3(rng.range(-1.0f, 1.0f), rng.range(-1.0f, 1.0f),
-                                           rng.range(-1.0f, 1.0f)),
-                                      rng.range(0.0f, kPi));
-            const Collider::Shape shape = (kind == 0)   ? Collider::AABB
-                                          : (kind == 1) ? Collider::Sphere
-                                                        : Collider::OBB;
+            const Quat rotation = Quat::from_axis_angle(
+                Vec3(rng.range(-1.0f, 1.0f), rng.range(-1.0f, 1.0f), rng.range(-1.0f, 1.0f)),
+                rng.range(0.0f, kPi));
+            const Collider::Shape shape = (kind == 0) ? Collider::AABB
+                                        : (kind == 1) ? Collider::Sphere
+                                                      : Collider::OBB;
             add(position, rotation, shape,
                 Vec3(rng.range(0.2f, 1.0f), rng.range(0.2f, 1.0f), rng.range(0.2f, 1.0f)),
                 rng.range(0.2f, 0.8f), false);
@@ -107,7 +106,7 @@ struct FuzzScene {
     }
 };
 
-}  // namespace
+} // namespace
 
 TEST(QueryFuzz, TenThousandRaysMatchBruteForce) {
     FuzzScene fuzz;
@@ -182,7 +181,8 @@ TEST(QueryFuzz, OverlapSphereMatchesBruteForce) {
 
     Rng rng(0x2468u);
     for (int i = 0; i < 2000; ++i) {
-        const Vec3 center(rng.range(-10.0f, 10.0f), rng.range(0.0f, 10.0f), rng.range(-10.0f, 10.0f));
+        const Vec3 center(rng.range(-10.0f, 10.0f), rng.range(0.0f, 10.0f),
+                          rng.range(-10.0f, 10.0f));
         const float radius = rng.range(0.1f, 2.5f);
 
         std::vector<EntityId> accelerated = fuzz.physics.overlap_sphere(center, radius);
@@ -196,8 +196,8 @@ TEST(QueryFuzz, OverlapSphereMatchesBruteForce) {
             float pen = 0.0f;
             bool hit = false;
             if (collider->shape == Collider::Sphere) {
-                hit = sphere_sphere(center, radius, fuzz.physics.position_of(id), collider->radius, n,
-                                    pen);
+                hit = sphere_sphere(center, radius, fuzz.physics.position_of(id), collider->radius,
+                                    n, pen);
             } else {
                 hit = sphere_obb(center, radius, fuzz.physics.world_obb(id), n, pen);
             }

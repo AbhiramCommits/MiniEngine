@@ -1,0 +1,16 @@
+{
+  "name": "Ramp and rolling spheres",
+  "seed": 20261016,
+  "gravity": [0.0, -9.81, 0.0],
+  "camera": { "eye": [4.0, 8.0, 16.0], "target": [0.0, 2.5, 0.0] },
+  "entities": [
+    { "tag": "floor", "shape": "aabb", "half_extents": [14.0, 0.5, 8.0], "position": [0.0, -0.5, 0.0], "static": true, "friction": 0.7, "restitution": 0.05 },
+
+    { "tag": "ramp", "shape": "obb", "half_extents": [5.0, 0.2, 3.0], "position": [0.0, 3.0, 0.0], "rotation_euler_deg": [0.0, 0.0, -12.0], "static": true, "friction": 0.25, "restitution": 0.1 },
+
+    { "tag": "roller", "shape": "sphere", "radius": 0.5, "position": [-4.0, 4.35, 0.0], "offset": [1.6, -0.34, 0.0], "repeat": 5, "mass": 0.7, "restitution": 0.35, "friction": 0.6 },
+
+    { "tag": "ball", "shape": "sphere", "radius": 0.5, "position": [8.0, 5.0, 2.0], "mass": 0.7, "restitution": 0.55, "friction": 0.4 },
+    { "tag": "crate", "shape": "aabb", "half_extents": [0.4, 0.4, 0.4], "position": [-8.0, 6.0, 1.0], "mass": 1.0, "restitution": 0.2, "friction": 0.5 }
+  ]
+}
