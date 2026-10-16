@@ -1,0 +1,26 @@
+# Build directories
+/build/
+/build-*/
+/cmake-build-*/
+/out/
+
+# Compiled objects / libs / binaries
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.exe
+*.dSYM/
+
+# Editor / OS noise
+.DS_Store
+.idea/
+.vscode/
+*.swp
+compile_commands.json
+
+# Sanitizer / profiling output
+*.profraw
+*.profdata
