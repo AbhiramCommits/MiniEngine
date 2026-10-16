@@ -227,6 +227,41 @@ TEST(Math, ComposeDecomposeTrs) {
     }
 }
 
+TEST(Math, CameraProjectionAndView) {
+    const Mat4 view = Mat4::look_at(Vec3(0.0f, 0.0f, 10.0f), Vec3::zero(), Vec3::unit_y());
+
+    // The origin sits 10 units in front of the camera, i.e. at view-space -Z.
+    const Vec3 origin_view = view.transform_point(Vec3::zero());
+    EXPECT_TRUE(origin_view.approx_equal_to(Vec3(0.0f, 0.0f, -10.0f), 1.0e-4f));
+
+    const float aspect = 16.0f / 9.0f;
+    const Mat4 proj = Mat4::perspective(deg_to_rad(60.0f), aspect, 0.1f, 100.0f);
+    const Mat4 view_proj = proj * view;
+
+    const auto clip_w = [&](const Vec3& p) {
+        return view_proj.at(3, 0) * p.x + view_proj.at(3, 1) * p.y + view_proj.at(3, 2) * p.z +
+               view_proj.at(3, 3);
+    };
+
+    // A point on the view axis projects to the centre of the screen.
+    EXPECT_NEAR(clip_w(Vec3::zero()), 10.0f, 1.0e-3f);
+    const Vec3 ndc = Vec3(view_proj.transform_point(Vec3::zero()).x / clip_w(Vec3::zero()),
+                          view_proj.transform_point(Vec3::zero()).y / clip_w(Vec3::zero()),
+                          0.0f);
+    EXPECT_NEAR(ndc.x, 0.0f, 1.0e-4f);
+    EXPECT_NEAR(ndc.y, 0.0f, 1.0e-4f);
+
+    // A point behind the camera has negative w and is culled.
+    EXPECT_LT(clip_w(Vec3(0.0f, 0.0f, 20.0f)), 0.0f);
+
+    // A point at the right edge of the frustum lands on ndc.x == 1.
+    const float half_width = std::tan(deg_to_rad(30.0f)) * aspect * 10.0f;
+    const Vec3 edge(half_width, 0.0f, 0.0f);
+    const float w_edge = clip_w(edge);
+    const Vec3 edge_ndc = view_proj.transform_point(edge) / w_edge;
+    EXPECT_NEAR(edge_ndc.x, 1.0f, 1.0e-3f);
+}
+
 TEST(Math, QuatNormalizeAndConjugate) {
     const Quat q(2.0f, 0.0f, 0.0f, 0.0f);
     const Quat n = q.normalize();

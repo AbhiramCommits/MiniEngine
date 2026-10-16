@@ -219,6 +219,38 @@ Vec3 Mat4::transform_direction(const Vec3& d) const {
                 at(2, 0) * d.x + at(2, 1) * d.y + at(2, 2) * d.z);
 }
 
+Mat4 Mat4::perspective(float fov_y_radians, float aspect, float near_z, float far_z) {
+    Mat4 r;
+    for (float& value : r.m) {
+        value = 0.0f;
+    }
+    const float f = 1.0f / std::tan(fov_y_radians * 0.5f);
+    r.at(0, 0) = f / (aspect > kEpsilon ? aspect : 1.0f);
+    r.at(1, 1) = f;
+    r.at(2, 2) = (far_z + near_z) / (near_z - far_z);
+    r.at(2, 3) = (2.0f * far_z * near_z) / (near_z - far_z);
+    r.at(3, 2) = -1.0f;
+    return r;
+}
+
+Mat4 Mat4::look_at(const Vec3& eye, const Vec3& target, const Vec3& up) {
+    const Vec3 forward = (target - eye).normalized();
+    Vec3 right = forward.cross(up).normalized();
+    if (right.length_squared() < kEpsilonSq) {
+        right = Vec3::unit_x();
+    }
+    const Vec3 true_up = right.cross(forward);
+
+    Mat4 r;
+    r.at(0, 0) = right.x;    r.at(0, 1) = right.y;    r.at(0, 2) = right.z;
+    r.at(0, 3) = -right.dot(eye);
+    r.at(1, 0) = true_up.x;  r.at(1, 1) = true_up.y;  r.at(1, 2) = true_up.z;
+    r.at(1, 3) = -true_up.dot(eye);
+    r.at(2, 0) = -forward.x; r.at(2, 1) = -forward.y; r.at(2, 2) = -forward.z;
+    r.at(2, 3) = forward.dot(eye);
+    return r;
+}
+
 Mat4 Mat4::transposed() const {
     Mat4 r;
     for (int row = 0; row < 4; ++row) {

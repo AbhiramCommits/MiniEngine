@@ -1,0 +1,59 @@
+{
+  "viewport": { "width": 1280, "height": 720 },
+  "padding": 10,
+  "widgets": [
+    {
+      "id": "inspector",
+      "type": "panel",
+      "text": "Inspector",
+      "anchor": "top-left",
+      "width": 300,
+      "height": 400,
+      "padding": 8,
+      "spacing": 6,
+      "direction": "column",
+      "children": [
+        { "id": "inspector_title", "type": "label", "text": "Entity Inspector" },
+        { "id": "pos_x", "type": "slider", "text": "Position X", "binding": "selected.position.x", "min": -50, "max": 50, "focusable": true },
+        { "id": "pos_y", "type": "slider", "text": "Position Y", "binding": "selected.position.y", "min": -50, "max": 50, "focusable": true },
+        { "id": "pos_z", "type": "slider", "text": "Position Z", "binding": "selected.position.z", "min": -50, "max": 50, "focusable": true },
+        { "id": "vel_x", "type": "slider", "text": "Velocity X", "binding": "selected.velocity.x", "min": -50, "max": 50, "focusable": true },
+        { "id": "restitution", "type": "slider", "text": "Restitution", "binding": "physics.restitution", "min": 0, "max": 1, "focusable": true },
+        { "id": "gravity", "type": "slider", "text": "Gravity Y", "binding": "physics.gravity.y", "min": -30, "max": 10, "focusable": true }
+      ]
+    },
+    {
+      "id": "controls",
+      "type": "panel",
+      "text": "Replay",
+      "anchor": "bottom-left",
+      "width": 300,
+      "height": 160,
+      "padding": 8,
+      "spacing": 6,
+      "direction": "column",
+      "children": [
+        { "id": "pause", "type": "button", "text": "Pause", "binding": "sim.pause", "focusable": true },
+        { "id": "step", "type": "button", "text": "Step", "binding": "sim.step", "focusable": true },
+        { "id": "reset", "type": "button", "text": "Reset", "binding": "sim.reset", "focusable": true },
+        { "id": "wireframe", "type": "checkbox", "text": "Wireframe", "binding": "debug.wireframe", "focusable": true }
+      ]
+    },
+    {
+      "id": "hud",
+      "type": "panel",
+      "text": "Stats",
+      "anchor": "top-right",
+      "width": 300,
+      "height": 120,
+      "padding": 8,
+      "spacing": 6,
+      "direction": "column",
+      "children": [
+        { "id": "fps_label", "type": "label", "text": "FPS", "binding": "stats.fps" },
+        { "id": "bodies_label", "type": "label", "text": "Bodies", "binding": "stats.bodies" },
+        { "id": "pairs_label", "type": "label", "text": "Pairs", "binding": "stats.pairs" }
+      ]
+    }
+  ]
+}

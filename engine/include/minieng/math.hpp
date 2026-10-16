@@ -184,6 +184,10 @@ struct Mat4 {
     // Splits an affine TRS matrix back into components.
     static void decompose(const Mat4& mat, Vec3& out_t, Quat& out_r, Vec3& out_s);
 
+    // Right-handed camera helpers (looking down -Z in view space).
+    static Mat4 perspective(float fov_y_radians, float aspect, float near_z, float far_z);
+    static Mat4 look_at(const Vec3& eye, const Vec3& target, const Vec3& up);
+
     float at(int row, int col) const { return m[row * 4 + col]; }
     float& at(int row, int col) { return m[row * 4 + col]; }
 

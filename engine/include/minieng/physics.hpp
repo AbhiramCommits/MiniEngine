@@ -122,6 +122,10 @@ struct PhysicsConfig {
 
     // Broadphase selection: sweep-and-prune (true) or brute force (false).
     bool use_sap = true;
+
+    // Defaults applied to newly spawned bodies (also exposed to the UI).
+    float default_restitution = 0.3f;
+    float default_friction = 0.4f;
 };
 
 // ---------------------------------------------------------------------------
