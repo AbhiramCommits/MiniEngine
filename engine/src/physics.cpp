@@ -675,14 +675,17 @@ Aabb PhysicsWorld::world_aabb(EntityId id) const {
             break;
         }
         case Collider::OBB: {
+            // Bounding box of a rotated box: centre +/- sum(|axis_i| * h_i).
+            // (Adding only the six face points would under-estimate the extent.)
             const Obb obb = world_obb(id);
-            box.min = center;
-            box.max = center;
+            Vec3 r(0.0f, 0.0f, 0.0f);
             for (int i = 0; i < 3; ++i) {
-                const Vec3 e = obb.axis[i] * obb.half_extents[i];
-                box.expand(center + e);
-                box.expand(center - e);
+                const Vec3 a = obb.axis[i];
+                const float h = obb.half_extents[i];
+                r = r + Vec3(std::fabs(a.x), std::fabs(a.y), std::fabs(a.z)) * h;
             }
+            box.min = center - r;
+            box.max = center + r;
             break;
         }
     }

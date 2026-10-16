@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build, test and bench (ubuntu-latest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure (headless, no app)
+        run: >
+          cmake -S . -B build
+          -DMINIENGINE_BUILD_APP=OFF
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+      - name: Build
+        run: cmake --build build -j
+
+      - name: Run the test suite
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Benchmark smoke run (reduced ticks)
+        run: >
+          ./build/tools/minieng_bench
+          --ticks 120 --warmup 20 --queries 2000
+          --json results/bench-smoke.json
+
+      - name: Show the smoke results
+        run: cat results/bench-smoke.json
+
+  warnings-as-errors:
+    name: First-party warnings as errors (ubuntu-latest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure with -Werror (first-party targets only)
+        run: >
+          cmake -S . -B build-werror
+          -DMINIENGINE_BUILD_APP=OFF
+          -DMINIENGINE_WERROR=ON
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+      - name: Build
+        run: cmake --build build-werror -j
