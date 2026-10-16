@@ -1,0 +1,42 @@
+{
+  "generated_by": "minieng_bench",
+  "machine": "macOS 64-bit",
+  "dt": 0.016667,
+  "ticks": 1800,
+  "warmup_ticks": 60,
+  "body_counts": [500, 2000, 5000],
+  "scenario_a": [
+    { "bodies": 500, "broadphase": "bruteforce", "mean_ms": 0.257565, "p50_ms": 0.251917, "p95_ms": 0.297883, "max_ms": 0.570500, "mean_pairs": 64.770690, "mean_contacts": 64.770690 },
+    { "bodies": 500, "broadphase": "sap", "mean_ms": 0.057935, "p50_ms": 0.057250, "p95_ms": 0.068417, "max_ms": 0.268417, "mean_pairs": 64.770690, "mean_contacts": 64.770690 },
+    { "bodies": 2000, "broadphase": "bruteforce", "mean_ms": 5.076600, "p50_ms": 5.016771, "p95_ms": 5.384635, "max_ms": 15.335083, "mean_pairs": 307.505172, "mean_contacts": 307.505172 },
+    { "bodies": 2000, "broadphase": "sap", "mean_ms": 0.482896, "p50_ms": 0.477521, "p95_ms": 0.544461, "max_ms": 0.741000, "mean_pairs": 307.505172, "mean_contacts": 307.505172 },
+    { "bodies": 5000, "broadphase": "bruteforce", "mean_ms": 59.421751, "p50_ms": 47.018292, "p95_ms": 129.221011, "max_ms": 352.801666, "mean_pairs": 1008.245402, "mean_contacts": 1008.245402 },
+    { "bodies": 5000, "broadphase": "sap", "mean_ms": 8.588703, "p50_ms": 5.098833, "p95_ms": 24.605917, "max_ms": 135.867625, "mean_pairs": 1008.245402, "mean_contacts": 1008.245402 }
+  ],
+  "systems_5000_sap": [
+    { "system": "integrate", "mean_ms": 0.303411, "p95_ms": 0.485033, "share_percent": 3.532675 },
+    { "system": "broadphase", "mean_ms": 6.297816, "p95_ms": 17.531716, "share_percent": 73.326734 },
+    { "system": "narrowphase", "mean_ms": 0.881044, "p95_ms": 2.589648, "share_percent": 10.258168 },
+    { "system": "resolve", "mean_ms": 0.480228, "p95_ms": 0.886444, "share_percent": 5.591387 },
+    { "system": "transforms", "mean_ms": 0.571489, "p95_ms": 1.306039, "share_percent": 6.653963 }
+  ],
+  "tick_total_ms_5000_sap": 8.588703,
+  "scenario_b": {
+    "bodies": 5000,
+    "raycasts": 100000,
+    "raycasts_per_sec": 16103.013339,
+    "raycast_hit_rate": 1.000000,
+    "sweeps": 100000,
+    "sweeps_per_sec": 19207.009790,
+    "sweep_hit_rate": 0.918030
+  },
+  "scenario_c": {
+    "bodies": 300,
+    "ticks": 300,
+    "same_seed_identical": true,
+    "different_seed_differs": true,
+    "hash_a": 7770664141778673455,
+    "hash_b": 7770664141778673455,
+    "hash_c": 15589939887376618741
+  }
+}

@@ -19,6 +19,7 @@
 
 #include "minieng/loop.hpp"
 #include "minieng/physics.hpp"
+#include "minieng/profiler.hpp"
 #include "minieng/rng.hpp"
 #include "minieng/scene.hpp"
 #include "minieng/ui/bindings.hpp"
@@ -211,18 +212,33 @@ void build_scene(AppState& app, std::uint64_t seed) {
 
 void install_systems(AppState& app) {
     app.loop.clear_systems();
-    app.loop.set_system(SystemStage::PhysicsIntegrate,
-                        [&app](float dt) { app.physics.integrate(dt); });
+    app.loop.set_system(SystemStage::PhysicsIntegrate, [&app](float dt) {
+        MINIENG_PROFILE("integrate");
+        app.physics.integrate(dt);
+    });
     app.loop.set_system(SystemStage::CollisionResolve, [&app](float dt) {
-        app.physics.build_broadphase();
-        const std::vector<Pair> pairs = app.physics.broadphase_pairs();
-        const std::vector<Contact> contacts = app.physics.narrowphase(pairs);
+        std::vector<Pair> pairs;
+        {
+            MINIENG_PROFILE("broadphase");
+            app.physics.build_broadphase();
+            pairs = app.physics.broadphase_pairs();
+        }
+        std::vector<Contact> contacts;
+        {
+            MINIENG_PROFILE("narrowphase");
+            contacts = app.physics.narrowphase(pairs);
+        }
+        {
+            MINIENG_PROFILE("resolve");
+            app.physics.resolve_contacts(contacts, dt);
+        }
         app.control.pair_count = static_cast<int>(pairs.size());
         app.control.contact_count = static_cast<int>(contacts.size());
-        app.physics.resolve_contacts(contacts, dt);
     });
-    app.loop.set_system(SystemStage::SceneTransform,
-                        [&app](float) { app.scene.update_world_transforms(); });
+    app.loop.set_system(SystemStage::SceneTransform, [&app](float) {
+        MINIENG_PROFILE("transforms");
+        app.scene.update_world_transforms();
+    });
     app.loop.set_system(SystemStage::UiObserve, [&app](float) {
         app.control.ticks = app.loop.tick_count();
         app.control.body_count = static_cast<int>(app.world.entity_count());
@@ -463,13 +479,21 @@ void draw_entity_list(AppState& app) {
 
 void draw_stats_overlay(AppState& app) {
     ImGui::SetNextWindowPos(ImVec2(980.0f, 420.0f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(280.0f, 110.0f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(280.0f, 200.0f), ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Profiler")) {
-        ImGui::Text("frame   %.2f ms", static_cast<double>(app.frame_ms));
+        const FrameStats frame = Profiler::global().frame_stats();
+        ImGui::Text("frame   %.2f ms (p95 %.2f)", frame.mean_ms, frame.p95_ms);
         ImGui::Text("ticks   %llu", static_cast<unsigned long long>(app.control.ticks));
         ImGui::Text("bodies  %d", app.control.body_count);
         ImGui::Text("pairs   %d", app.control.pair_count);
         ImGui::Text("queries %.0f /s", static_cast<double>(app.queries_per_sec));
+        ImGui::Separator();
+        static const char* kSystems[] = {"integrate", "broadphase", "narrowphase", "resolve",
+                                         "transforms"};
+        for (const char* name : kSystems) {
+            const FrameStats s = Profiler::global().stats(name);
+            ImGui::Text("%-12s %6.3f ms", name, s.mean_ms);
+        }
     }
     ImGui::End();
 }
@@ -605,6 +629,9 @@ int main(int argc, char** argv) {
         app.control.fps = 1.0f / frame_dt;
 
         // --- simulation ----------------------------------------------------
+        Profiler& profiler = Profiler::global();
+        profiler.begin_frame();
+
         if (app.control.reset_requested) {
             build_scene(app, app.seed);
             app.control.reset_requested = false;
@@ -618,6 +645,9 @@ int main(int argc, char** argv) {
         } else {
             app.loop.advance(frame_dt);
         }
+
+        profiler.add_sample("frame", app.frame_ms);
+        profiler.end_frame();
 
         // --- live query throughput ----------------------------------------
         {

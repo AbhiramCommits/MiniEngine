@@ -1,0 +1,30 @@
+MiniEngine benchmark
+  ticks=1800 warmup=60 dt=0.016667 queries=100000
+
+=== (a) broadphase: brute force vs sweep-and-prune ===
+  bodies  broadphase     mean_ms     p95_ms     max_ms        pairs     contacts
+     500  bruteforce       0.258      0.298      0.571         64.8         64.8
+     500  sap              0.058      0.068      0.268         64.8         64.8
+    2000  bruteforce       5.077      5.385     15.335        307.5        307.5
+    2000  sap              0.483      0.544      0.741        307.5        307.5
+    5000  bruteforce      59.422    129.221    352.802       1008.2       1008.2
+    5000  sap              8.589     24.606    135.868       1008.2       1008.2
+
+=== (a) per-system breakdown, 5000 bodies, sap ===
+system            mean_ms      share
+integrate           0.303       3.5%
+broadphase          6.298      73.3%
+narrowphase         0.881      10.3%
+resolve             0.480       5.6%
+transforms          0.571       6.7%
+tick_total          8.589     100.0%
+
+=== (b) queries against the 5000-body scene ===
+raycasts    100000    6210.018 ms           16103 /s  hit_rate=1.00
+sweeps      100000    5206.433 ms           19207 /s  hit_rate=0.92
+
+=== (c) determinism ===
+same seed, two runs : identical  (0x6bd6f1ddbf955f2f)
+different seed      : differs  (0xd85a97ba80c6d4f5)
+
+wrote results/bench.json
