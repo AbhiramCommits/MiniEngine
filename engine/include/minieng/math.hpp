@@ -84,8 +84,8 @@ struct Vec3 {
 
     Vec3 scale(float s) const { return *this * s; }
 
-    float operator[](int i) const { return (&x)[i]; }
-    float& operator[](int i) { return (&x)[i]; }
+    float operator[](int i) const { return i == 0 ? x : (i == 1 ? y : z); }
+    float& operator[](int i) { return i == 0 ? x : (i == 1 ? y : z); }
 
     bool approx_equal_to(const Vec3& o, float eps = kEpsilon) const {
         return std::fabs(x - o.x) <= eps && std::fabs(y - o.y) <= eps &&
